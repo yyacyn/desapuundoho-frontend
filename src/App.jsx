@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { apiCall } from './config/api'
 import './App.css'
 
 function App() {
@@ -8,8 +9,7 @@ function App() {
   const handleClick = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api.php?path=hello')
-      const data = await response.json()
+      const data = await apiCall('hello')
       setMessage(data.message)
     } catch (error) {
       setMessage('Error: Could not connect to backend')

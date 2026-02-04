@@ -14,13 +14,29 @@ $path = isset($_GET['path']) ? $_GET['path'] : 'hello';
 
 // Backend URL
 $backendUrl = 'http://localhost:8081/api/' . $path;
+// $backendUrl = 'https://coloured-eugenie-yashin-958e9ae4.koyeb.app/api/' . $path;
 
-// Forward the request to Golang backend
-$response = file_get_contents($backendUrl);
+// Use cURL instead of file_get_contents (more reliable on cPanel)
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, $backendUrl);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
 
-if ($response === false) {
+$response = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+$curlError = curl_error($ch);
+curl_close($ch);
+
+if ($response === false || $httpCode !== 200) {
     http_response_code(500);
-    echo json_encode(['error' => 'Could not connect to backend']);
+    echo json_encode([
+        'error' => 'Could not connect to backend',
+        'http_code' => $httpCode,
+        'curl_error' => $curlError,
+        'backend_url' => $backendUrl,
+        'hint' => 'Check: curl http://localhost:8081/api/hello in terminal'
+    ]);
 } else {
     echo $response;
 }
