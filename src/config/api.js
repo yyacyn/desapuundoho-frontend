@@ -5,10 +5,10 @@ const API_CONFIG = {
     // BASE_URL: 'http://localhost:8081/api',
 
     // For production (cPanel with PHP proxy)
-    BASE_URL: '/api.php',
+    // BASE_URL: '/api.php',
 
-    //koyeb
-    // BASE_URL: 'https://coloured-eugenie-yashin-958e9ae4.koyeb.app/api',
+    //leapcell
+    BASE_URL: 'https://desapuundoho-backend-yyacyn8027-q3bmatch.apn.leapcell.dev/api',
 
     // Alternative: Direct API call (if Apache proxy works)
     // BASE_URL: '/api',
