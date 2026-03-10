@@ -1,18 +1,26 @@
 import { useEffect, useState } from "react"
 import { Menu, X } from "lucide-react"
+import { Link, useLocation } from "react-router-dom"
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+  const location = useLocation()
+
+  const isHomePage = location.pathname === "/"
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50)
     }
 
-    window.addEventListener("scroll", handleScroll)
+    // Hanya tambahkan event listener scroll jika di halaman Home
+    if (isHomePage) {
+      window.addEventListener("scroll", handleScroll)
+    }
+
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  }, [isHomePage])
 
   const navLinks = [
     { name: "Home", href: "/" },
@@ -27,11 +35,15 @@ export default function Navbar() {
   return (
     <nav
       className={`fixed w-full top-0 left-0 z-50 transition-all duration-300 ${
-        isScrolled ? "bg-[#298064] shadow-lg" : "bg-transparent"
+        isHomePage
+          ? isScrolled
+            ? "bg-[#298064] shadow-lg"
+            : "bg-transparent"
+          : "bg-[#298064] shadow-lg"
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        
+
         {/* Logo & Title */}
         <div className="flex items-center gap-3">
           <img
@@ -50,13 +62,13 @@ export default function Navbar() {
         <ul className="hidden md:flex items-center gap-8 text-white font-medium">
           {navLinks.map((link, index) => (
             <li key={index}>
-              <a
-                href={link.href}
-                className="relative group"
+              <Link
+                to={link.href}
+                className={`relative group ${location.pathname === link.href ? 'text-white font-bold' : ''}`}
               >
                 {link.name}
                 <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-white transition-all duration-300 group-hover:w-full"></span>
-              </a>
+              </Link>
             </li>
           ))}
         </ul>
@@ -76,13 +88,13 @@ export default function Navbar() {
           <ul className="flex flex-col gap-4 text-white font-medium">
             {navLinks.map((link, index) => (
               <li key={index}>
-                <a
-                  href={link.href}
+                <Link
+                  to={link.href}
                   onClick={() => setIsOpen(false)}
-                  className="block hover:translate-x-2 transition-all duration-300"
+                  className={`block hover:translate-x-2 transition-all duration-300 ${location.pathname === link.href ? 'font-bold' : ''}`}
                 >
                   {link.name}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>

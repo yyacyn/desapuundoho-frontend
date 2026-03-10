@@ -68,7 +68,7 @@ export function TentangKami() {
 
         <div > 
           <div className="mb-8">
-            <div className="w-12 h-0.5 bg-[#298064] mb-4"></div>
+            <div className="w-16 h-1 bg-[#2D7A5F] mb-3"></div>
             <h2 className="text-3xl font-bold text-emerald-700 mb-4">
               Tentang Kami
             </h2>
@@ -128,7 +128,7 @@ export function Sambutan() {
         <div className="w-full md:w-1/3 flex flex-col items-center">
           <div className="border-2 border-gray-200 rounded-2xl w-full overflow-hidden shadow-sm">
             <img 
-              src="./assets/home/syamsir.png" 
+              src="/assets/home/syamsir.png" 
               alt="Syamsir Sabara" 
               className="w-full h-full object-cover rounded-xl"
             />
@@ -141,7 +141,7 @@ export function Sambutan() {
         {/* Bagian Kanan: Konten Teks */}
         <div className="w-full md:w-2/3 flex flex-col h-full self-stretch">
           <div className="flex items-center gap-3 mb-2">
-            <div className="h-0.5 w-12 bg-[#2D7A5F]"></div>
+            <div className="h-1 w-12 bg-[#2D7A5F]"></div>
             <span className="text-gray-700 font-medium text-sm md:text-base">
               Sambutan Kepala Desa Puundoho
             </span>
@@ -218,7 +218,7 @@ export function APBDesa() {
         {/* Sisi Kiri: Informasi Keuangan */}
         <div className="w-full lg:w-1/2 space-y-6">
           <div className="space-y-2">
-            <div className="w-16 h-1 bg-[#2D7A5F]"></div>
+            <div className="w-16 h-1 bg-[#2D7A5F] mb-3"></div>
             <h1 className="text-[#2D7A5F] text-4xl font-bold">APB DESA 2026</h1>
             <p className="text-gray-600 leading-relaxed max-w-md">
               Akses cepat dan transparan terhadap APB Desa serta proyek pembangunan
@@ -393,12 +393,12 @@ export const BeritaSection = () => {
 export const GaleriSection = () => {
   // Data dummy foto galeri
   const photos = [
-    { id: 1, src: "./assets/home/tentang.png", alt: "Gedung Serbaguna 1" },
-    { id: 2, src: "./assets/home/tentang.png", alt: "Gedung Serbaguna 2" },
-    { id: 3, src: "./assets/home/tentang.png", alt: "Gedung Serbaguna 3" },
-    { id: 4, src: "./assets/home/tentang.png", alt: "Gedung Serbaguna 4" },
-    { id: 5, src: "./assets/home/tentang.png", alt: "Gedung Serbaguna 5" },
-    { id: 6, src: "./assets/home/tentang.png", alt: "Gedung Serbaguna 6" },
+    { id: 1, src: "/assets/home/tentang.png", alt: "Gedung Serbaguna 1" },
+    { id: 2, src: "/assets/home/tentang.png", alt: "Gedung Serbaguna 2" },
+    { id: 3, src: "/assets/home/tentang.png", alt: "Gedung Serbaguna 3" },
+    { id: 4, src: "/assets/home/tentang.png", alt: "Gedung Serbaguna 4" },
+    { id: 5, src: "/assets/home/tentang.png", alt: "Gedung Serbaguna 5" },
+    { id: 6, src: "/assets/home/tentang.png", alt: "Gedung Serbaguna 6" },
   ];
 
   return (
@@ -423,10 +423,9 @@ export const GaleriSection = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {photos.map((photo) => (
           <GaleriItem 
-            key={photo.id} 
-            imageUrl={photo.src} 
-            altText={photo.alt} 
-          />
+            key={photo.id}
+            imageUrl={photo.src}
+            altText={photo.alt} caption={undefined} />
         ))}
       </div>
 

@@ -7,7 +7,7 @@ function Footer({ siteSettings }) {
     instansi_address = 'Kecamatan Baula, Kabupaten Kolaka, Sulawesi Tenggara',
     instansi_phone = '+62812-3456-7890',
     instansi_email = 'loremipsum@gmail.com',
-    logo = './assets/logo-puundoho.png',
+    logo = '/assets/logo-puundoho.png',
     instagram = '#',
     youtube = '#',
     facebook = '#',
