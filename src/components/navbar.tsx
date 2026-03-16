@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react"
 import { Menu, X } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
+import DropdownMenu from "./DropdownMenu"
+
+interface NavLink {
+  name: string
+  href: string
+  isDropdown?: boolean
+}
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -22,10 +29,10 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [isHomePage])
 
-  const navLinks = [
+  const navLinks: NavLink[] = [
     { name: "Home", href: "/" },
     { name: "Profil", href: "/profil" },
-    { name: "Infografis", href: "/infografis" },
+    { name: "Infografis", href: "#", isDropdown: true },
     { name: "IDM", href: "/idm" },
     { name: "Berita", href: "/berita" },
     { name: "Belanja", href: "/belanja" },
@@ -62,13 +69,17 @@ export default function Navbar() {
         <ul className="hidden md:flex items-center gap-8 text-white font-medium">
           {navLinks.map((link, index) => (
             <li key={index}>
-              <Link
-                to={link.href}
-                className={`relative group ${location.pathname === link.href ? 'text-white font-bold' : ''}`}
-              >
-                {link.name}
-                <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-white transition-all duration-300 group-hover:w-full"></span>
-              </Link>
+              {link.isDropdown ? (
+                <DropdownMenu />
+              ) : (
+                <Link
+                  to={link.href}
+                  className={`relative group ${location.pathname === link.href ? 'text-white font-bold' : ''}`}
+                >
+                  {link.name}
+                  <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-white transition-all duration-300 group-hover:w-full"></span>
+                </Link>
+              )}
             </li>
           ))}
         </ul>
@@ -97,6 +108,57 @@ export default function Navbar() {
                 </Link>
               </li>
             ))}
+            {/* Infografis Submenu for Mobile */}
+            <li className="pl-4 border-l-2 border-white/30">
+              <div className="text-sm font-medium text-white/80 mb-2">Infografis</div>
+              <ul className="flex flex-col gap-2">
+                <li>
+                  <Link
+                    to="/infografis/penduduk-desa"
+                    onClick={() => setIsOpen(false)}
+                    className="block text-sm hover:translate-x-2 transition-all duration-300"
+                  >
+                    Penduduk Desa
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/infografis/stunting"
+                    onClick={() => setIsOpen(false)}
+                    className="block text-sm hover:translate-x-2 transition-all duration-300"
+                  >
+                    Stunting
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/infografis/apbdesa"
+                    onClick={() => setIsOpen(false)}
+                    className="block text-sm hover:translate-x-2 transition-all duration-300"
+                  >
+                    APBDesa
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/infografis/bansos"
+                    onClick={() => setIsOpen(false)}
+                    className="block text-sm hover:translate-x-2 transition-all duration-300"
+                  >
+                    Bansos
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/infografis/sdgs"
+                    onClick={() => setIsOpen(false)}
+                    className="block text-sm hover:translate-x-2 transition-all duration-300"
+                  >
+                    SDGS
+                  </Link>
+                </li>
+              </ul>
+            </li>
           </ul>
         </div>
       )}
