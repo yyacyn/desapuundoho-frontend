@@ -9,6 +9,9 @@ import DetailBerita from './pages/DetailBerita'
 import Galeri from './pages/Galeri'
 import Profil from './pages/Profil'
 import APBDesa from './pages/APBDesa' // Added APBDesa page import
+import Stunting from './pages/Stunting'
+import Bansos from './pages/Bansos'
+import SDGs from './pages/SDGs'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -21,6 +24,9 @@ createRoot(document.getElementById('root')).render(
         <Route path="/profil" element={<Profil />} />
         {/* Added route for APBDesa page - accessible at /infografis/apbdesa */}
         <Route path="/infografis/apbdesa" element={<APBDesa />} />
+        <Route path="/infografis/stunting" element={<Stunting />} />
+        <Route path="/infografis/bansos" element={<Bansos />} />
+        <Route path="/infografis/sdgs" element={<SDGs />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,
