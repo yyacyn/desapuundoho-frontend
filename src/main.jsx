@@ -12,6 +12,7 @@ import APBDesa from './pages/APBDesa' // Added APBDesa page import
 import Stunting from './pages/Stunting'
 import Bansos from './pages/Bansos'
 import SDGs from './pages/SDGs'
+import IDM from './pages/IDM'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -22,6 +23,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/detail-berita" element={<DetailBerita />} />
         <Route path="/galeri" element={<Galeri />} />
         <Route path="/profil" element={<Profil />} />
+        <Route path="/idm" element={<IDM />} />
         {/* Added route for APBDesa page - accessible at /infografis/apbdesa */}
         <Route path="/infografis/apbdesa" element={<APBDesa />} />
         <Route path="/infografis/stunting" element={<Stunting />} />
