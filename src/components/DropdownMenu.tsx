@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, ReactNode } from "react"
 import { Link } from "react-router-dom"
-import { Users, Activity, FileText, HeartHandshake, Target } from "lucide-react"
+import { Users, Activity, FileText, HeartHandshake, Target, ChevronDown } from "lucide-react"
 
 interface DropdownItem {
   name: string
@@ -35,7 +35,6 @@ export default function DropdownMenu({ items = defaultDropdownItems, onItemSelec
         clearTimeout(closeTimerRef.current)
         closeTimerRef.current = null
       }
-      // Allow browser to render the element first, then trigger animation
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           setIsAnimating(true)
@@ -69,6 +68,7 @@ export default function DropdownMenu({ items = defaultDropdownItems, onItemSelec
 
     document.addEventListener("mousedown", handleClickOutside)
     document.addEventListener("scroll", handleScroll, true)
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside)
       document.removeEventListener("scroll", handleScroll, true)
@@ -86,42 +86,47 @@ export default function DropdownMenu({ items = defaultDropdownItems, onItemSelec
 
   return (
     <div className="relative group" ref={dropdownRef}>
-      {/* Dropdown Trigger */}
+      {/* Trigger */}
       <button
-        className="relative group"
+        className="flex items-center gap-2 relative"
         onClick={toggleDropdown}
-        aria-haspopup="true"
-        aria-expanded={isOpen}
       >
         <span>Infografis</span>
+        <ChevronDown
+          size={18}
+          className={`transition-transform duration-200 ${
+            isOpen ? "rotate-180" : "group-hover:translate-y-0.5"
+          }`}
+        />
         <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-white transition-all duration-300 group-hover:w-full"></span>
       </button>
 
-      {/* Dropdown Panel */}
+      {/* Dropdown */}
       {shouldRender && (
         <div
-          className={`absolute top-full left-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50 transition-all duration-200 ease-out ${
+          className={`absolute top-full left-1/2 -translate-x-1/2 mt-4 w-[520px] bg-white rounded-2xl shadow-xl border border-gray-200 z-50 transition-all duration-200 ease-out ${
             isAnimating ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"
           }`}
         >
           {/* Arrow */}
-          <div className="absolute -top-2 left-6 w-4 h-4 bg-white transform rotate-45 border-l border-t border-gray-100"></div>
+          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white rotate-45 border-l border-t border-gray-200"></div>
 
-          {/* Grid Menu */}
-          <div className="relative p-4 grid grid-cols-2 gap-3">
+          {/* Content */}
+          <div className="p-6 grid grid-cols-2 gap-6">
             {items.map((item, index) => (
               <Link
                 key={index}
                 to={item.href}
                 onClick={() => handleItemClick(item.href)}
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-200 group select-text"
+                className="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 hover:shadow-sm transition-all duration-200"
               >
-                {/* Icon Container */}
-                <div className="flex-shrink-0 w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600 group-hover:bg-emerald-200 transition-colors duration-200">
+                {/* Icon */}
+                <div className="w-12 h-12 bg-emerald-100/80 rounded-xl flex items-center justify-center text-emerald-600 transition-all duration-200 group-hover:bg-emerald-200">
                   {item.icon}
                 </div>
+
                 {/* Text */}
-                <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 select-text">
+                <span className="text-base font-medium text-gray-700 group-hover:text-gray-900">
                   {item.name}
                 </span>
               </Link>

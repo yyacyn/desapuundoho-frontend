@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
@@ -68,10 +68,15 @@ const dummyPosts = [
 export default function Berita() {
   const [search, setSearch] = useState("");
   const [visibleCount, setVisibleCount] = useState(3);
+  const navigate = useNavigate();
 
   const filteredPosts = dummyPosts.filter((post) =>
     post.title.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handlePostClick = (post: typeof dummyPosts[0]) => {
+    navigate(`/detail-berita/${post.id}`, { state: { post } });
+  };
 
   // Section Popular
   const mainPost = filteredPosts[0];
@@ -83,27 +88,7 @@ export default function Berita() {
   return (
     <>
     <Navbar />
-    <section className="w-full bg-gray-50 md:pt-30 pt-15">
-      <div className="max-w-6xl mx-auto px-4 py-10 text-center">
-        {/* Title */}
-        <h1 className="text-3xl md:text-4xl font-bold text-[#298064]">
-          Berita
-        </h1>
-
-        {/* Breadcrumb */}
-        <p className="mt-2 text-sm md:text-base text-black">
-          <RouterLink to="/" className="text-gray-700 hover:text-[#298064]">
-            Home
-          </RouterLink>{" "}
-          /{" "}
-          <span className="text-[#298064] font-medium">Berita</span>
-        </p>
-      </div>
-      {/* Bottom shadow-[0_0_15px_rgba(0,0,0,0.1)] */}
-      <div className="h-6 md:h-12 bg-[#298064] mt-5" />
-    </section>
-
-    <section className="bg-white py-12 px-4 md:px-28 w-full mx-auto">
+    <section className="bg-white py-12 px-4 md:px-28 md:pt-30 pt-15 w-full mx-auto">
     {/* Search */}
     <div className="relative mb-10">
         <input
@@ -116,6 +101,16 @@ export default function Berita() {
         <Search className="absolute right-3 top-3.5 text-gray-400" size={20} />
     </div>
 
+    {/* No results message */}
+    {filteredPosts.length === 0 && (
+      <div className="text-center py-20">
+        <p className="text-gray-500 text-lg">Tidak ada berita yang ditemukan</p>
+        <p className="text-gray-400 text-sm mt-2">Coba dengan kata kunci lainnya</p>
+      </div>
+    )}
+
+    {filteredPosts.length > 0 && (
+      <>
     {/* Popular */}
     <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-[#298064]">Popular</h2>
@@ -132,6 +127,10 @@ export default function Berita() {
         {mainPost && (
         <a
             href={mainPost.link}
+            onClick={(e) => {
+              e.preventDefault();
+              handlePostClick(mainPost);
+            }}
             className="bg-white rounded-xl shadow-[0_0_15px_rgba(0,0,0,0.1)] overflow-hidden md:col-span-1"
         >
             <img
@@ -158,6 +157,10 @@ export default function Berita() {
             <a
             key={post.id}
             href={post.link}
+            onClick={(e) => {
+              e.preventDefault();
+              handlePostClick(post);
+            }}
             className="flex gap-4 shadow-[0_0_15px_rgba(0,0,0,0.1)] rounded-xl p-3 hover:shadow-md transition w-full"
             >
             <img
@@ -193,6 +196,10 @@ export default function Berita() {
         <a
         key={post.id}
         href={post.link}
+        onClick={(e) => {
+          e.preventDefault();
+          handlePostClick(post);
+        }}
         className="flex flex-col md:flex-row gap-4 md:gap-6 shadow-[0_0_15px_rgba(0,0,0,0.1)] rounded-xl p-4 hover:shadow-md transition mb-6"
         >
         <img
@@ -211,6 +218,8 @@ export default function Berita() {
         </div>
         </a>
     ))}
+    </>
+    )}
 
     </section>
     <Footer siteSettings={undefined} />

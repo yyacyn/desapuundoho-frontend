@@ -13,7 +13,7 @@ export default function Profil() {
         <BaganDesa />
         <SejarahDesa />
         <MapDesa />
-        <Footer />
+        <Footer siteSettings={undefined} />
     </main>
   );
 }
