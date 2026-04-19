@@ -114,11 +114,11 @@ export default function Navbar() {
               <ul className="flex flex-col gap-2">
                 <li>
                   <Link
-                    to="/infografis/penduduk-desa"
+                    to="/Penduduk"
                     onClick={() => setIsOpen(false)}
                     className="block text-sm hover:translate-x-2 transition-all duration-300"
                   >
-                    Penduduk Desa
+                    Penduduk
                   </Link>
                 </li>
                 <li>

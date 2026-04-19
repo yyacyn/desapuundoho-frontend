@@ -14,7 +14,7 @@ interface DropdownMenuProps {
 }
 
 const defaultDropdownItems: DropdownItem[] = [
-  { name: "Penduduk Desa", href: "/infografis/penduduk-desa", icon: <Users size={20} /> },
+  { name: "Penduduk", href: "/penduduk", icon: <Users size={20} /> },
   { name: "Stunting", href: "/infografis/stunting", icon: <Activity size={20} /> },
   { name: "APBDesa", href: "/infografis/apbdesa", icon: <FileText size={20} /> },
   { name: "Bansos", href: "/infografis/bansos", icon: <HeartHandshake size={20} /> },
