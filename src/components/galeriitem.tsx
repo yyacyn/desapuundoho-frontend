@@ -1,4 +1,10 @@
-const GaleriItem = ({ imageUrl, altText, caption }) => {
+type GaleriItemProps = {
+  imageUrl: string;
+  altText: string;
+  caption: string;
+};
+
+const GaleriItem = ({ imageUrl, altText, caption }: GaleriItemProps) => {
   return (
     <div className="relative overflow-hidden rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 group w-full aspect-square">
       <img
