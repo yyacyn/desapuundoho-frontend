@@ -1,0 +1,13 @@
+RewriteEngine On
+RewriteBase /
+
+# 1. Route API requests to api.php (PHP Proxy)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^api/(.*)$ api.php?path=$1 [QSA,L]
+
+# 2. SPA Fallback
+RewriteRule ^index\.html$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]

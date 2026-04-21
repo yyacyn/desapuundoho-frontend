@@ -13,8 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $path = isset($_GET['path']) ? $_GET['path'] : 'hello';
 
 // Backend URL
-// $backendUrl = 'http://localhost:8081/api/' . $path;
-$backendUrl = 'https://desapuundoho-backend-yyacyn8027-q3bmatch.apn.leapcell.dev/api/' . $path;
+$backendUrl = 'http://localhost:8081/api/' . $path;
+// $backendUrl = 'https://desapuundoho-backend-yyacyn8027-q3bmatch.apn.leapcell.dev/api/' . $path;
 
 // Use cURL instead of file_get_contents (more reliable on cPanel)
 $ch = curl_init();

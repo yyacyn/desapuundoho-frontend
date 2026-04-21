@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, ReactNode } from "react"
-import { Link } from "react-router-dom"
+import { NavLink, useLocation } from "react-router-dom"
 import { Users, Activity, FileText, HeartHandshake, Target, ChevronDown } from "lucide-react"
 
 interface DropdownItem {
@@ -22,6 +22,7 @@ const defaultDropdownItems: DropdownItem[] = [
 ]
 
 export default function DropdownMenu({ items = defaultDropdownItems, onItemSelected }: DropdownMenuProps) {
+  const location = useLocation()
   const [isOpen, setIsOpen] = useState(false)
   const [shouldRender, setShouldRender] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
@@ -114,11 +115,13 @@ export default function DropdownMenu({ items = defaultDropdownItems, onItemSelec
           {/* Content */}
           <div className="p-6 grid grid-cols-2 gap-6">
             {items.map((item, index) => (
-              <Link
+              <NavLink
                 key={index}
                 to={item.href}
                 onClick={() => handleItemClick(item.href)}
-                className="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 hover:shadow-sm transition-all duration-200"
+                className={({ isActive }) => 
+                  `flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 hover:shadow-sm transition-all duration-200 ${isActive ? 'bg-emerald-50 shadow-sm' : ''}`
+                }
               >
                 {/* Icon */}
                 <div className="w-12 h-12 bg-emerald-100/80 rounded-xl flex items-center justify-center text-emerald-600 transition-all duration-200 group-hover:bg-emerald-200">
@@ -126,10 +129,10 @@ export default function DropdownMenu({ items = defaultDropdownItems, onItemSelec
                 </div>
 
                 {/* Text */}
-                <span className="text-base font-medium text-gray-700 group-hover:text-gray-900">
+                <span className={`text-base font-medium transition-colors ${location.pathname === item.href ? 'text-emerald-700 font-bold' : 'text-gray-700 group-hover:text-gray-900'}`}>
                   {item.name}
                 </span>
-              </Link>
+              </NavLink>
             ))}
           </div>
         </div>

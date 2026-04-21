@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Menu, X, ChevronDown } from "lucide-react"
-import { Link, useLocation } from "react-router-dom"
+import { NavLink, useLocation } from "react-router-dom"
 import DropdownMenu from "./DropdownMenu"
 
 interface NavLink {
@@ -72,13 +72,15 @@ export default function Navbar() {
               {link.isDropdown ? (
                 <DropdownMenu />
               ) : (
-                <Link
+                <NavLink
                   to={link.href}
-                  className={`relative group ${location.pathname === link.href ? 'text-white font-bold' : ''}`}
+                  className={({ isActive }) => 
+                    `relative group ${isActive ? 'text-white font-bold' : ''}`
+                  }
                 >
                   {link.name}
                   <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-white transition-all duration-300 group-hover:w-full"></span>
-                </Link>
+                </NavLink>
               )}
             </li>
           ))}
@@ -99,13 +101,15 @@ export default function Navbar() {
           <ul className="flex flex-col gap-4 text-white font-medium">
             {navLinks.map((link, index) => (
               <li key={index}>
-                <Link
+                <NavLink
                   to={link.href}
                   onClick={() => setIsOpen(false)}
-                  className={`block hover:translate-x-2 transition-all duration-300 ${location.pathname === link.href ? 'font-bold' : ''}`}
+                  className={({ isActive }) => 
+                    `block hover:translate-x-2 transition-all duration-300 ${isActive ? 'font-bold' : ''}`
+                  }
                 >
                   {link.name}
-                </Link>
+                </NavLink>
               </li>
             ))}
             {/* Infografis Submenu for Mobile */}
@@ -113,49 +117,59 @@ export default function Navbar() {
               <div className="text-sm font-medium text-white/80 mb-2">Infografis</div>
               <ul className="flex flex-col gap-2">
                 <li>
-                  <Link
+                  <NavLink
                     to="/infografis/penduduk-desa"
                     onClick={() => setIsOpen(false)}
-                    className="block text-sm hover:translate-x-2 transition-all duration-300"
+                    className={({ isActive }) => 
+                      `block text-sm hover:translate-x-2 transition-all duration-300 ${isActive ? 'font-bold' : ''}`
+                    }
                   >
                     Penduduk Desa
-                  </Link>
+                  </NavLink>
                 </li>
                 <li>
-                  <Link
+                  <NavLink
                     to="/infografis/stunting"
                     onClick={() => setIsOpen(false)}
-                    className="block text-sm hover:translate-x-2 transition-all duration-300"
+                    className={({ isActive }) => 
+                      `block text-sm hover:translate-x-2 transition-all duration-300 ${isActive ? 'font-bold' : ''}`
+                    }
                   >
                     Stunting
-                  </Link>
+                  </NavLink>
                 </li>
                 <li>
-                  <Link
+                  <NavLink
                     to="/infografis/apbdesa"
                     onClick={() => setIsOpen(false)}
-                    className="block text-sm hover:translate-x-2 transition-all duration-300"
+                    className={({ isActive }) => 
+                      `block text-sm hover:translate-x-2 transition-all duration-300 ${isActive ? 'font-bold' : ''}`
+                    }
                   >
                     APBDesa
-                  </Link>
+                  </NavLink>
                 </li>
                 <li>
-                  <Link
+                  <NavLink
                     to="/infografis/bansos"
                     onClick={() => setIsOpen(false)}
-                    className="block text-sm hover:translate-x-2 transition-all duration-300"
+                    className={({ isActive }) => 
+                      `block text-sm hover:translate-x-2 transition-all duration-300 ${isActive ? 'font-bold' : ''}`
+                    }
                   >
                     Bansos
-                  </Link>
+                  </NavLink>
                 </li>
                 <li>
-                  <Link
+                  <NavLink
                     to="/infografis/sdgs"
                     onClick={() => setIsOpen(false)}
-                    className="block text-sm hover:translate-x-2 transition-all duration-300"
+                    className={({ isActive }) => 
+                      `block text-sm hover:translate-x-2 transition-all duration-300 ${isActive ? 'font-bold' : ''}`
+                    }
                   >
                     SDGS
-                  </Link>
+                  </NavLink>
                 </li>
               </ul>
             </li>

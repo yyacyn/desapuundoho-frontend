@@ -7,14 +7,11 @@ const API_CONFIG = {
     // For production (cPanel with PHP proxy)
     // BASE_URL: '/api.php',
 
-    //leapcell
-    BASE_URL: 'https://desapuundoho-backend-yyacyn8027-q3bmatch.apn.leapcell.dev/api',
+    // production (with .htaccess rewrite to api.php)
+    BASE_URL: '/api' || 'http://localhost:8081/api',
 
-    // Alternative: Direct API call (if Apache proxy works)
-    // BASE_URL: '/api',
-
-    // Alternative: With domain and port
-    // BASE_URL: 'http://desapuundoho.my.id:8081/api',
+    // leapcell (DEPRECATED)
+    // BASE_URL: 'https://desapuundoho-backend-yyacyn8027-q3bmatch.apn.leapcell.dev/api',
 }
 
 // Helper function to make API calls

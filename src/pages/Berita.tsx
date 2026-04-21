@@ -12,7 +12,7 @@ const dummyPosts = [
     category: "Kegiatan Desa",
     title: "Gotong Royong Membersihkan Lingkungan Desa Puundoho",
     date: "27 Juli 2026",
-    image: "./assets/home/berita.jpg",
+    image: "/assets/home/berita.jpg",
     link: "#",
   },
   {
@@ -20,7 +20,7 @@ const dummyPosts = [
     category: "Pengumuman",
     title: "Pembagian Bantuan Sosial Tahap 1 Tahun 2026",
     date: "25 Juli 2026",
-    image: "./assets/home/berita.jpg",
+    image: "/assets/home/berita.jpg",
     link: "#",
   },
   {
@@ -28,7 +28,7 @@ const dummyPosts = [
     category: "Kegiatan Desa",
     title: "Musyawarah Perencanaan Pembangunan Desa",
     date: "23 Juli 2026",
-    image: "./assets/home/berita.jpg",
+    image: "/assets/home/berita.jpg",
     link: "#",
   },
   {
@@ -36,7 +36,7 @@ const dummyPosts = [
     category: "Berita",
     title: "Pelatihan UMKM untuk Ibu-Ibu PKK",
     date: "20 Juli 2026",
-    image: "./assets/home/berita.jpg",
+    image: "/assets/home/berita.jpg",
     link: "#",
   },
   {
@@ -44,7 +44,7 @@ const dummyPosts = [
     category: "Kegiatan Desa",
     title: "Peringatan Hari Kemerdekaan RI ke-81",
     date: "17 Agustus 2026",
-    image: "./assets/home/berita.jpg",
+    image: "/assets/home/berita.jpg",
     link: "#",
   },
   {
@@ -52,7 +52,7 @@ const dummyPosts = [
     category: "Pengumuman",
     title: "Jadwal Posyandu Bulan Maret 2026",
     date: "15 Juli 2026",
-    image: "./assets/home/berita.jpg",
+    image: "/assets/home/berita.jpg",
     link: "#",
   },
   {
@@ -60,7 +60,7 @@ const dummyPosts = [
     category: "Berita",
     title: "Panen Raya Padi Bersama Kelompok Tani",
     date: "10 Juli 2026",
-    image: "./assets/home/berita.jpg",
+    image: "/assets/home/berita.jpg",
     link: "#",
   },
 ];
