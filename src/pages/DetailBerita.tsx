@@ -3,6 +3,7 @@ import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 import DOMPurify from "dompurify";
+import { useNews } from "../context/NewsContext";
 
 export default function NewsDetailPage() {
   const location = useLocation();
@@ -10,88 +11,51 @@ export default function NewsDetailPage() {
   const navigate = useNavigate();
   const post = location.state?.post;
 
-  // Data dummy untuk berita (sama seperti di Berita.tsx)
-  const dummyPosts = [
-    {
-      id: 1,
-      category: "Kegiatan Desa",
-      title: "Gotong Royong Membersihkan Lingkungan Desa Puundoho",
-      date: "27 Juli 2026",
-      image: "./assets/home/berita.jpg",
-      link: "#",
-    },
-    {
-      id: 2,
-      category: "Pengumuman",
-      title: "Pembagian Bantuan Sosial Tahap 1 Tahun 2026",
-      date: "25 Juli 2026",
-      image: "./assets/home/berita.jpg",
-      link: "#",
-    },
-    {
-      id: 3,
-      category: "Kegiatan Desa",
-      title: "Musyawarah Perencanaan Pembangunan Desa",
-      date: "23 Juli 2026",
-      image: "./assets/home/berita.jpg",
-      link: "#",
-    },
-    {
-      id: 4,
-      category: "Berita",
-      title: "Pelatihan UMKM untuk Ibu-Ibu PKK",
-      date: "20 Juli 2026",
-      image: "./assets/home/berita.jpg",
-      link: "#",
-    },
-    {
-      id: 5,
-      category: "Kegiatan Desa",
-      title: "Peringatan Hari Kemerdekaan RI ke-81",
-      date: "17 Agustus 2026",
-      image: "./assets/home/berita.jpg",
-      link: "#",
-    },
-    {
-      id: 6,
-      category: "Pengumuman",
-      title: "Jadwal Posyandu Bulan Maret 2026",
-      date: "15 Juli 2026",
-      image: "./assets/home/berita.jpg",
-      link: "#",
-    },
-    {
-      id: 7,
-      category: "Berita",
-      title: "Panen Raya Padi Bersama Kelompok Tani",
-      date: "10 Juli 2026",
-      image: "./assets/home/berita.jpg",
-      link: "#",
-    },
-  ];
+  // Ambil data global
+  const { articles, loading } = useNews();
 
-  // Cari post berdasarkan ID dari URL parameter
-  const currentPost = post || dummyPosts.find((p) => p.id === parseInt(id || ""));
+  // 1. Prioritaskan data dari state navigasi, jika tidak ada cari di global context
+  const postFromState = location.state?.post;
+  const currentPost = postFromState || articles.find((p) => String(p.id) === String(id));
 
-  // Cari prev dan next post
-  const currentIndex = dummyPosts.findIndex((p) => p.id === currentPost?.id);
-  const prevPost = currentIndex > 0 ? dummyPosts[currentIndex - 1] : null;
-  const nextPost = currentIndex < dummyPosts.length - 1 ? dummyPosts[currentIndex + 1] : null;
+  // 2. Logika Navigasi (Prev/Next) menggunakan data asli dari API
+  const currentIndex = articles.findIndex((p) => String(p.id) === String(currentPost?.id));
+  const prevPost = currentIndex > 0 ? articles[currentIndex - 1] : null;
+  const nextPost = currentIndex < articles.length - 1 ? articles[currentIndex + 1] : null;
 
   const handlePrevClick = () => {
     if (prevPost) {
       navigate(`/detail-berita/${prevPost.id}`, { state: { post: prevPost } });
+      window.scrollTo(0, 0); // Scroll ke atas saat pindah berita
     }
   };
 
   const handleNextClick = () => {
     if (nextPost) {
       navigate(`/detail-berita/${nextPost.id}`, { state: { post: nextPost } });
+      window.scrollTo(0, 0);
     }
   };
 
-  const rawContent = currentPost?.content || "";
+  // 3. Format Tanggal
+  const formatDateIndo = (dateString: string | undefined) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    return isNaN(date.getTime())
+      ? dateString
+      : new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "long", year: "numeric" }).format(date);
+  };
+
+  const rawContent = currentPost?.content || ""; // Pastikan field 'content' ada di API Anda
   const sanitizedContent = DOMPurify.sanitize(rawContent);
+
+  if (loading && !currentPost) {
+    return <div className="py-40 text-center">Memuat Berita...</div>;
+  }
+
+  if (!currentPost) {
+    return <div className="py-40 text-center">Berita tidak ditemukan.</div>;
+  }
 
   return (
     <>
@@ -126,7 +90,7 @@ export default function NewsDetailPage() {
               {/* Article */}
               {rawContent ? (
                 <div
-                  className="mt-6 text-gray-600 leading-8 [text-wrap:pretty] break-normal [word-break:normal] [overflow-wrap:break-word] [&>*]:mb-4 [&_*]:max-w-full [&_p]:whitespace-normal [&_p]:break-normal [&_p]:[word-break:normal] [&_p]:[overflow-wrap:break-word] [&_span]:whitespace-normal [&_span]:[word-break:normal] [&_span]:[overflow-wrap:break-word] [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-4 [&_iframe]:max-w-full [&_video]:max-w-full [&_table]:w-full [&_table]:table-auto [&_table]:block [&_table]:overflow-x-auto [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-gray-100 [&_pre]:p-4 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6"
+                  className="mt-6 text-gray-600 leading-8 [text-wrap:pretty] break-normal [word-break:normal] [overflow-wrap:break-word] [&>*]:mb-4 [&_*]:max-w-full [&_p]:whitespace-normal [&_p]:break-normal [&_p]:[word-break:normal] [&_p]:[overflow-wrap:break-word] [&_span]:whitespace-normal [&_span]: [word-break:normal] [&_span]:[overflow-wrap:break-word] [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-4 [&_iframe]:max-w-full [&_video]:max-w-full [&_table]:w-full [&_table]:table-auto [&_table]:block [&_table]:overflow-x-auto [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-gray-100 [&_pre]:p-4 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6"
                   dangerouslySetInnerHTML={{ __html: sanitizedContent }}
                 />
               ) : (
@@ -146,13 +110,13 @@ export default function NewsDetailPage() {
 
             {/* SIDEBAR */}
             <aside className="space-y-6">
-
+              {/* Popular (Sekarang ambil dari 5 berita pertama di Global State) */}
               {/* Popular */}
               <div className="bg-emerald-600 text-white p-6 rounded-2xl">
                 <h3 className="text-xl font-semibold mb-4">Popular</h3>
 
                 <div className="space-y-4">
-                  {dummyPosts.slice(0, 5).map((item, index) => (
+                  {articles.slice(0, 5).map((item, index) => (
                     <div
                       key={item.id}
                       className="flex gap-4 border-b border-white/30 pb-3 cursor-pointer hover:opacity-80 transition"

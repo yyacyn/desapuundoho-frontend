@@ -41,13 +41,12 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`fixed w-full top-0 left-0 z-50 transition-all duration-300 ${
-        isHomePage
+      className={`fixed w-full top-0 left-0 z-50 transition-all duration-300 ${isHomePage
           ? isScrolled
             ? "bg-[#298064] shadow-lg"
             : "bg-transparent"
           : "bg-[#298064] shadow-lg"
-      }`}
+        }`}
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
@@ -74,7 +73,7 @@ export default function Navbar() {
               ) : (
                 <NavLink
                   to={link.href}
-                  className={({ isActive }) => 
+                  className={({ isActive }) =>
                     `relative group ${isActive ? 'text-white font-bold' : ''}`
                   }
                 >
@@ -104,7 +103,7 @@ export default function Navbar() {
                 <NavLink
                   to={link.href}
                   onClick={() => setIsOpen(false)}
-                  className={({ isActive }) => 
+                  className={({ isActive }) =>
                     `block hover:translate-x-2 transition-all duration-300 ${isActive ? 'font-bold' : ''}`
                   }
                 >
@@ -120,7 +119,7 @@ export default function Navbar() {
                   <NavLink
                     to="/infografis/penduduk-desa"
                     onClick={() => setIsOpen(false)}
-                    className={({ isActive }) => 
+                    className={({ isActive }) =>
                       `block text-sm hover:translate-x-2 transition-all duration-300 ${isActive ? 'font-bold' : ''}`
                     }
                   >
@@ -131,7 +130,7 @@ export default function Navbar() {
                   <NavLink
                     to="/infografis/stunting"
                     onClick={() => setIsOpen(false)}
-                    className={({ isActive }) => 
+                    className={({ isActive }) =>
                       `block text-sm hover:translate-x-2 transition-all duration-300 ${isActive ? 'font-bold' : ''}`
                     }
                   >
@@ -142,7 +141,7 @@ export default function Navbar() {
                   <NavLink
                     to="/infografis/apbdesa"
                     onClick={() => setIsOpen(false)}
-                    className={({ isActive }) => 
+                    className={({ isActive }) =>
                       `block text-sm hover:translate-x-2 transition-all duration-300 ${isActive ? 'font-bold' : ''}`
                     }
                   >
@@ -153,7 +152,7 @@ export default function Navbar() {
                   <NavLink
                     to="/infografis/bansos"
                     onClick={() => setIsOpen(false)}
-                    className={({ isActive }) => 
+                    className={({ isActive }) =>
                       `block text-sm hover:translate-x-2 transition-all duration-300 ${isActive ? 'font-bold' : ''}`
                     }
                   >
@@ -164,7 +163,7 @@ export default function Navbar() {
                   <NavLink
                     to="/infografis/sdgs"
                     onClick={() => setIsOpen(false)}
-                    className={({ isActive }) => 
+                    className={({ isActive }) =>
                       `block text-sm hover:translate-x-2 transition-all duration-300 ${isActive ? 'font-bold' : ''}`
                     }
                   >

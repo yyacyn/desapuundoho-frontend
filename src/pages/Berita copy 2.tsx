@@ -4,7 +4,6 @@ import { Search, LayoutGrid, ChevronDown } from "lucide-react";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import { apiFetch } from "../api";
-import { useNews } from "../context/NewsContext";
 
 // Data dummy untuk berita
 const dummyPosts = [
@@ -79,69 +78,57 @@ type Article = {
 }
 
 export default function Berita() {
-  const { articles, loading } = useNews();
+  const [articles, setArticles] = useState<Article[]>([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [sortDir, setSortDir] = useState('desc')
   const [visibleCount, setVisibleCount] = useState(3);
-  const navigate = useNavigate();
-  // const fetchArticles = async () => {
-  //   try {
-  //     const res = await apiFetch('/articles')
-  //     const data = await res.json()
-  //     setArticles(data.articles || [])
-  //   } catch (err) {
-  //     console.error('Failed to fetch articles:', err)
-  //   } finally {
-  //     setLoading(false)
-  //   }
-  // }
 
-  // useEffect(() => { fetchArticles() }, [])
+  const fetchArticles = async () => {
+    try {
+      const res = await apiFetch('/articles')
+      const data = await res.json()
+      setArticles(data.articles || [])
+    } catch (err) {
+      console.error('Failed to fetch articles:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-  if (loading) return <div className="text-center py-20">Memuat Halaman Berita...</div>;
+  useEffect(() => { fetchArticles() }, [])
 
   // Filter + search + sort (client-side on fetched data)
-  // const filtered = articles
-  //   .filter(a => filterStatus === 'all' || a.status === filterStatus)
-  //   .filter(a =>
-  //     a.title.toLowerCase().includes(search.toLowerCase()) ||
-  //     (a.excerpt || '').toLowerCase().includes(search.toLowerCase())
-  //   )
-  //   .sort((a, b) =>
-  //     sortDir === 'desc'
-  //       ? new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime()
-  //       : new Date(a.created_at ?? 0).getTime() - new Date(b.created_at ?? 0).getTime()
-  //   )
+  const filtered = articles
+    .filter(a => filterStatus === 'all' || a.status === filterStatus)
+    .filter(a =>
+      a.title.toLowerCase().includes(search.toLowerCase()) ||
+      (a.excerpt || '').toLowerCase().includes(search.toLowerCase())
+    )
+    .sort((a, b) =>
+      sortDir === 'desc'
+        ? new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime()
+        : new Date(a.created_at ?? 0).getTime() - new Date(b.created_at ?? 0).getTime()
+    )
+  const navigate = useNavigate();
 
-
-  // Filter pencarian
-  const filtered = articles.filter(a =>
-    a.title.toLowerCase().includes(search.toLowerCase())
+  const filteredPosts = dummyPosts.filter((post) =>
+    post.title.toLowerCase().includes(search.toLowerCase())
   );
-
-  // const filteredPosts = dummyPosts.filter((post) =>
-  //   post.title.toLowerCase().includes(search.toLowerCase())
-  // );
 
   const handlePostClick = (post: { id: number | string;[key: string]: unknown }) => {
     navigate(`/detail-berita/${post.id}`, { state: { post } });
   };
 
   const getArticleDate = (post: Article) =>
-    post.date ?? (post.created_at ? new Date(post.created_at).toLocaleDateString("id-ID", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }) : "-");
+    post.date ?? (post.created_at ? new Date(post.created_at).toLocaleDateString("id-ID") : "-");
 
-  // Logika Section Popular dan New Release
-  const mainPost = filtered[0];// Section Popular
-  const sidePosts = filtered.slice(1, 5); // 4 berita setelah yang utama
-  const newReleasePosts = filtered.slice(5); // Sisa berita lainnya
+  // Section Popular
+  const mainPost = filteredPosts[0];
 
   // Section New Release (mulai dari post ke-6 biar ga double)
-  // const newReleasePosts = filteredPosts.slice(5, 5 + visibleCount);
+  const newReleasePosts = filteredPosts.slice(5, 5 + visibleCount);
 
   return (
     <>
@@ -184,6 +171,7 @@ export default function Berita() {
               {/* Main Popular */}
               {mainPost && (
                 <a
+                  href={mainPost.link}
                   onClick={(e) => {
                     e.preventDefault();
                     handlePostClick(mainPost);
@@ -191,7 +179,7 @@ export default function Berita() {
                   className="bg-white rounded-xl shadow-[0_0_15px_rgba(0,0,0,0.1)] overflow-hidden md:col-span-1"
                 >
                   <img
-                    src={mainPost.cover_image ?? "./assets/home/berita.jpg"}
+                    src={mainPost.image}
                     alt={mainPost.title}
                     className="w-full h-80 object-cover"
                   />
@@ -203,16 +191,17 @@ export default function Berita() {
                       {mainPost.title}
                     </h3>
 
-                    <p className="text-xs text-gray-400 text-end mt-20">{getArticleDate(mainPost)}</p>
+                    <p className="text-xs text-gray-400 text-end mt-20">{mainPost.date}</p>
                   </div>
                 </a>
               )}
 
               {/* Side Popular */}
               <div className="md:col-span-2 grid gap-4">
-                {sidePosts.map((post) => (
+                {filtered.map((post) => (
                   <a
                     key={post.id}
+                    href={post.link ?? "#"}
                     onClick={(e) => {
                       e.preventDefault();
                       handlePostClick(post);
@@ -251,6 +240,7 @@ export default function Berita() {
             {newReleasePosts.map((post) => (
               <a
                 key={post.id}
+                href={post.link}
                 onClick={(e) => {
                   e.preventDefault();
                   handlePostClick(post);
@@ -258,7 +248,7 @@ export default function Berita() {
                 className="flex flex-col md:flex-row gap-4 md:gap-6 shadow-[0_0_15px_rgba(0,0,0,0.1)] rounded-xl p-4 hover:shadow-md transition mb-6"
               >
                 <img
-                  src={post.cover_image ?? "./assets/home/berita.jpg"}
+                  src={post.image}
                   alt={post.title}
                   className="w-full md:w-60 h-48 md:h-32 object-cover rounded-lg flex-shrink-0"
                 />
@@ -269,7 +259,7 @@ export default function Berita() {
                     {post.title}
                   </h3>
 
-                  <p className="text-xs text-gray-400 mt-2">{getArticleDate(post)}</p>
+                  <p className="text-xs text-gray-400 mt-2">{post.date}</p>
                 </div>
               </a>
             ))}

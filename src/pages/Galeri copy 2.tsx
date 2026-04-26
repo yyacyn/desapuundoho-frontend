@@ -4,7 +4,6 @@ import GaleriItem from "../components/galeriitem";
 import { useEffect, useState } from "react";
 // import { apiFetch } from "../../../puundoho-dashboard/src/api";
 import { apiFetch } from "../api";
-import { useGallery } from "../context/GalleryContext";
 
 type GalleryItemData = {
   id?: number
@@ -15,8 +14,25 @@ type GalleryItemData = {
 }
 
 export default function GaleriPage() {
-  const { items, loading } = useGallery();
+  const [items, setItems] = useState<GalleryItemData[]>([])
+  const [loading, setLoading] = useState(true)
+  const fetchGallery = async () => {
+    try {
+      const res = await apiFetch('/galeri')
+      const data = await res.json()
+      setItems(data.galeri || [])
+    } catch (err) {
+      console.error('Failed to fetch gallery:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
+  useEffect(() => { fetchGallery() }, [])
+
+  const filtered = items
+    .filter(item => Boolean((item.caption || '').trim()))
+    .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
   return (
     <>
       <Navbar />
@@ -40,14 +56,15 @@ export default function GaleriPage() {
         <section className="py-16">
           <div className="max-w-6xl mx-auto px-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-              {items.map((item, index) => (
-                <GaleriItem
-                  key={item.id ?? index}
-                  imageUrl={item.imageUrl || (item.images && item.images[0]) || ""}
-                  altText="Galeri"
-                  caption={item.caption || ""}
-                />
-              )
+              {filtered.map((item, index) =>
+                item.images && item.images.length > 0 ? (
+                  <GaleriItem
+                    key={item.id ?? index}
+                    imageUrl={item.imageUrl || item.images[0]}
+                    altText="Galeri"
+                    caption={item.caption || ""}
+                  />
+                ) : null
               )}
             </div>
           </div>

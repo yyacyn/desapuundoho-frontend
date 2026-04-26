@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import Navbar from "../components/navbar"
 import Footer from "../components/footer"
 import { TrendingUp, TrendingDown, Wallet, ChevronDown, ArrowUp, ArrowDown } from "lucide-react"
@@ -65,38 +65,6 @@ interface PembiayaanKategoriItem {
   totalAnggaran: string
 }
 
-interface ApbdEntry {
-  id: number
-  tahun: number
-  total_pendapatan: number
-  total_pengeluaran: number
-}
-
-interface PendapatanEntry {
-  id: number
-  kategori: string
-  jumlah: number
-}
-
-interface PengeluaranEntry {
-  id: number
-  bidang: string
-  jumlah: number
-}
-
-const CHART_MIN_TICK_STEP = 100_000_000
-
-const getChartScale = (maxValue: number) => {
-  const tickStep = maxValue > 0 ? Math.max(CHART_MIN_TICK_STEP, 10 ** Math.floor(Math.log10(maxValue))) : CHART_MIN_TICK_STEP
-  const roundedMaxValue = Math.max(tickStep, Math.ceil(maxValue / tickStep) * tickStep)
-  const ticks = Array.from(
-    { length: Math.floor(roundedMaxValue / tickStep) + 1 },
-    (_, index) => index * tickStep
-  )
-
-  return { tickStep, roundedMaxValue, ticks }
-}
-
 const ProgressItem: React.FC<ProgressItemProps> = ({ label, percentage, color }) => (
   <div className="mb-4">
     <div className="flex justify-between mb-2">
@@ -113,13 +81,18 @@ const ProgressItem: React.FC<ProgressItemProps> = ({ label, percentage, color })
 )
 
 const BarChart: React.FC<{ data: ChartData[]; title: string }> = ({ data, title }) => {
-  const maxDataValue = data.length > 0 ? Math.max(...data.flatMap(d => [d.pendapatan, d.belanja])) : 0
-  const { roundedMaxValue, ticks: yAxisLabels } = useMemo(() => getChartScale(maxDataValue), [maxDataValue])
+  const [selectedYear, setSelectedYear] = useState("2026")
+  const maxDataValue = Math.max(...data.flatMap(d => [d.pendapatan, d.belanja]))
+  const roundedMaxValue = Math.ceil(maxDataValue / 100000000) * 100000000
   const [hoveredBar, setHoveredBar] = useState<{ type: "pendapatan" | "belanja"; year: string; value: number; x: number; y: number } | null>(null)
 
   const formatCurrency = (value: number): string => {
     return `Rp ${value.toLocaleString("id-ID")}`
   }
+
+  const yAxisLabels = [0, 100000000, 200000000, 300000000, 400000000, 500000000, 600000000, 700000000, 800000000, 900000000, 1000000000].filter(
+    (label) => label <= roundedMaxValue
+  )
 
   return (
     <div className="bg-white rounded-xl shadow-[0_0_15px_rgba(0,0,0,0.1)] p-6 relative">
@@ -271,16 +244,7 @@ const SimpleBarChart: React.FC<{ data: { label: string; value: number }[]; color
 }
 
 export default function APBDesa() {
-  const {
-    apbdList,
-    pendapatanData,
-    pengeluaranData,
-    selectedYear,
-    setSelectedYear,
-    loading,
-    subLoading,
-  } = useAPBDes()
-
+  const [selectedYear, setSelectedYear] = useState("2026")
   const [openPendapatanId, setOpenPendapatanId] = useState<string | null>(null)
   const [hoveredPendapatanBarId, setHoveredPendapatanBarId] = useState<string | null>(null)
   const [openBelanjaId, setOpenBelanjaId] = useState<string | null>(null)
@@ -288,173 +252,192 @@ export default function APBDesa() {
   const [openPembiayaanId, setOpenPembiayaanId] = useState<string | null>(null)
   const [hoveredPembiayaanBarId, setHoveredPembiayaanBarId] = useState<string | null>(null)
 
-  const typedApbdList = apbdList as ApbdEntry[]
-  const typedPendapatanData = pendapatanData as PendapatanEntry[]
-  const typedPengeluaranData = pengeluaranData as PengeluaranEntry[]
+  const summaryData = {
+    pendapatan: "Rp 1.250.000.000",
+    belanja: "Rp 1.180.000.000",
+    pembiayaan: {
+      penerimaan: "Rp 70.000.000",
+      pengeluaran: "Rp 0",
+    },
+    surplus: "Rp 70.000.000",
+  }
 
-  const selectedApbd = useMemo(
-    () => typedApbdList.find((item) => item.id === selectedYear) || null,
-    [typedApbdList, selectedYear]
+  const chartDataYearly: ChartData[] = [
+    { year: "2022", pendapatan: 300000000, belanja: 250000000 },
+    { year: "2023", pendapatan: 500000000, belanja: 450000000 },
+    { year: "2024", pendapatan: 650000000, belanja: 600000000 },
+    { year: "2025", pendapatan: 750000000, belanja: 700000000 },
+    { year: "2026", pendapatan: 800000000, belanja: 550000000 },
+  ]
+
+  const pendapatan2025Data: PendapatanKategoriItem[] = [
+    {
+      id: "asli",
+      label: "Pendapatan Asli Desa",
+      chartLabel: "Pendapatan Asli Desa",
+      amount: "Rp 0,00",
+      totalValue: 0,
+      detail: [
+        { uraian: "Hasil usaha desa", anggaran: "Rp 0,00" },
+        { uraian: "Hasil aset desa", anggaran: "Rp 0,00" },
+      ],
+      totalAnggaran: "Rp 0,00",
+    },
+    {
+      id: "transfer",
+      label: "Pendapatan Transfer",
+      chartLabel: "Pendapatan Transfer",
+      amount: "Rp 0,00",
+      totalValue: 300000000,
+      detail: [
+        { uraian: "Dana desa", anggaran: "Rp 0,00" },
+        { uraian: "Bagi hasil pajak dan retribusi", anggaran: "Rp 0,00" },
+        { uraian: "Alokasi dana desa", anggaran: "Rp 0,00" },
+      ],
+      totalAnggaran: "Rp 0,00",
+    },
+    {
+      id: "lainnya",
+      label: "Pendapatan Lainnya",
+      chartLabel: "Pendapatan Lain-lain",
+      amount: "Rp 0,00",
+      totalValue: 0,
+      detail: [
+        { uraian: "Pendapatan hibah", anggaran: "Rp 0,00" },
+        { uraian: "Pendapatan lain-lain", anggaran: "Rp 0,00" },
+      ],
+      totalAnggaran: "Rp 0,00",
+    },
+  ]
+
+  const pendapatanChartIncrement = 100000000
+  const totalPendapatanValue = pendapatan2025Data.reduce((sum, item) => sum + item.totalValue, 0)
+  const maxPendapatanValue = Math.max(...pendapatan2025Data.map((item) => item.totalValue), pendapatanChartIncrement)
+  const roundedPendapatanMaxValue = Math.ceil(maxPendapatanValue / pendapatanChartIncrement) * pendapatanChartIncrement
+  const pendapatanChartTicks: number[] = Array.from(
+    { length: roundedPendapatanMaxValue / pendapatanChartIncrement + 1 },
+    (_, index) => index * pendapatanChartIncrement
   )
-  const selectedYearLabel = selectedApbd?.tahun?.toString() ?? ""
-
-  const totalPendapatan = useMemo(
-    () => typedPendapatanData.reduce((sum, item) => sum + Number(item.jumlah || 0), 0),
-    [typedPendapatanData]
-  )
-
-  const totalBelanja = useMemo(
-    () => typedPengeluaranData.reduce((sum, item) => sum + Number(item.jumlah || 0), 0),
-    [typedPengeluaranData]
-  )
-
-  const totalSurplus = totalPendapatan - totalBelanja
-
-  const chartDataYearly: ChartData[] = useMemo(
-    () => [...typedApbdList]
-      .sort((a, b) => a.tahun - b.tahun)
-      .map((item) => ({
-        year: String(item.tahun),
-        pendapatan: Number(item.total_pendapatan || 0),
-        belanja: Number(item.total_pengeluaran || 0),
-      })),
-    [typedApbdList]
-  )
-
-  const years = useMemo(
-    () => [...typedApbdList].map((item) => String(item.tahun)).sort((a, b) => Number(b) - Number(a)),
-    [typedApbdList]
-  )
-
-  const isDataLoading = loading || subLoading
 
   const formatRupiah = (value: number): string => `Rp ${value.toLocaleString("id-ID")}`
 
-  const getAmountTextClass = (value: number): string => {
-    if (value >= 1_000_000_000) {
-      return "text-sm md:text-sm"
-    }
-
-    if (value >= 10_000_000) {
-      return "text-lg md:text-base"
-    }
-
-    return "text-lg md:text-base"
-  }
-
-  // Pembiayaan dihitung dari 100% pendapatan dan pengeluaran
-  const pembiayaanPenerimaanValue = totalPendapatan
-  const pembiayaanPengeluaranValue = totalBelanja
-
-  const summaryData = {
-    pendapatan: formatRupiah(totalPendapatan),
-    belanja: formatRupiah(totalBelanja),
-    pembiayaan: {
-      penerimaan: formatRupiah(pembiayaanPenerimaanValue),
-      pengeluaran: formatRupiah(pembiayaanPengeluaranValue),
+  const belanjaSectionData: BelanjaKategoriItem[] = [
+    {
+      id: "pemerintahan",
+      label: "Penyelenggaraan Pemerintah Desa",
+      chartLabel: "Penyelenggaraan Pemerintahan Desa",
+      amount: "Rp 0,00",
+      totalValue: 26000000,
+      detail: [
+        { id: "honor", uraian: "Honor perangkat desa", anggaran: "Rp 0,00", percentage: 35 },
+        { id: "operasional", uraian: "Operasional kantor desa", anggaran: "Rp 0,00", percentage: 30 },
+        { id: "administrasi", uraian: "Administrasi pemerintahan", anggaran: "Rp 0,00", percentage: 35 },
+      ],
+      totalAnggaran: "Rp 0,00",
     },
-    surplus: formatRupiah(totalSurplus),
-  }
+    {
+      id: "pembangunan",
+      label: "Pelaksanaan Pembangunan Desa",
+      chartLabel: "Pelaksanaan Pembangunan Desa",
+      amount: "Rp 0,00",
+      totalValue: 450000000,
+      detail: [
+        { id: "jalan", uraian: "Pembangunan jalan desa", anggaran: "Rp 0,00", percentage: 50 },
+        { id: "drainase", uraian: "Perbaikan drainase", anggaran: "Rp 0,00", percentage: 30 },
+        { id: "fasilitas", uraian: "Peningkatan fasilitas umum", anggaran: "Rp 0,00", percentage: 20 },
+      ],
+      totalAnggaran: "Rp 0,00",
+    },
+    {
+      id: "kemasyarakatan",
+      label: "Pembinaan Masyarakat Desa",
+      chartLabel: "Pembinaan Kemasyarakatan Desa",
+      amount: "Rp 0,00",
+      totalValue: 93000000,
+      detail: [
+        { id: "pelatihan", uraian: "Pelatihan kader masyarakat", anggaran: "Rp 0,00", percentage: 40 },
+        { id: "sosial", uraian: "Kegiatan sosial masyarakat", anggaran: "Rp 0,00", percentage: 35 },
+        { id: "budaya", uraian: "Pembinaan seni dan budaya", anggaran: "Rp 0,00", percentage: 25 },
+      ],
+      totalAnggaran: "Rp 0,00",
+    },
+    {
+      id: "pemberdayaan",
+      label: "Pemberdayaan Masyarakat Desa",
+      chartLabel: "Pemberdayaan Masyarakat Desa",
+      amount: "Rp 0,00",
+      totalValue: 0,
+      detail: [
+        { id: "umkm", uraian: "Penguatan UMKM desa", anggaran: "Rp 0,00", percentage: 45 },
+        { id: "kelompok", uraian: "Bantuan kelompok usaha", anggaran: "Rp 0,00", percentage: 30 },
+        { id: "pendampingan", uraian: "Pendampingan usaha desa", anggaran: "Rp 0,00", percentage: 25 },
+      ],
+      totalAnggaran: "Rp 0,00",
+    },
+    {
+      id: "darurat",
+      label: "Keadaan Darurat",
+      chartLabel: "Penanggulangan Bencana, Keadaan Darurat, dan Keadaan Mendesak Desa",
+      amount: "Rp 0,00",
+      totalValue: 0,
+      detail: [
+        { id: "bencana", uraian: "Penanganan bencana alam", anggaran: "Rp 0,00", percentage: 40 },
+        { id: "darurat-kesehatan", uraian: "Tanggap darurat kesehatan", anggaran: "Rp 0,00", percentage: 35 },
+        { id: "mendesak", uraian: "Kebutuhan mendesak desa", anggaran: "Rp 0,00", percentage: 25 },
+      ],
+      totalAnggaran: "Rp 0,00",
+    },
+  ]
 
-  const pendapatan2025Data: PendapatanKategoriItem[] = useMemo(() => {
-    const grouped = typedPendapatanData.reduce<Record<string, number>>((acc, item) => {
-      const key = item.kategori || "Lainnya"
-      acc[key] = (acc[key] || 0) + Number(item.jumlah || 0)
-      return acc
-    }, {})
-
-    return Object.entries(grouped).map(([kategori, jumlah], index) => ({
-      id: `pendapatan-${index}`,
-      label: kategori,
-      chartLabel: kategori,
-      amount: formatRupiah(jumlah),
-      totalValue: jumlah,
-      detail: [{ uraian: kategori, anggaran: formatRupiah(jumlah) }],
-      totalAnggaran: formatRupiah(jumlah),
-    }))
-  }, [typedPendapatanData])
-
-  const totalPendapatanValue = pendapatan2025Data.reduce((sum, item) => sum + item.totalValue, 0)
-  const maxPendapatanValue = Math.max(...pendapatan2025Data.map((item) => item.totalValue), CHART_MIN_TICK_STEP)
-  const { roundedMaxValue: roundedPendapatanMaxValue, ticks: pendapatanChartTicks } = useMemo(
-    () => getChartScale(maxPendapatanValue),
-    [maxPendapatanValue]
-  )
-
-  const belanjaSectionData: BelanjaKategoriItem[] = useMemo(() => {
-    const grouped = typedPengeluaranData.reduce<Record<string, number>>((acc, item) => {
-      const key = item.bidang || "Lainnya"
-      acc[key] = (acc[key] || 0) + Number(item.jumlah || 0)
-      return acc
-    }, {})
-
-    return Object.entries(grouped).map(([bidang, jumlah], index) => ({
-      id: `belanja-${index}`,
-      label: bidang,
-      chartLabel: bidang,
-      amount: formatRupiah(jumlah),
-      totalValue: jumlah,
-      detail: [{ id: `detail-${index}`, uraian: bidang, anggaran: formatRupiah(jumlah), percentage: 100 }],
-      totalAnggaran: formatRupiah(jumlah),
-    }))
-  }, [typedPengeluaranData])
-
+  const belanjaChartIncrement = 100000000
   const totalBelanjaSectionValue = belanjaSectionData.reduce((sum, item) => sum + item.totalValue, 0)
-  const maxBelanjaValue = Math.max(...belanjaSectionData.map((item) => item.totalValue), CHART_MIN_TICK_STEP)
+  const maxBelanjaValue = Math.max(...belanjaSectionData.map((item) => item.totalValue), belanjaChartIncrement)
   const getPercentageFromTotal = (value: number, total: number): number => {
     if (total <= 0) return 0
     return Math.round((value / total) * 100)
   }
-  const { roundedMaxValue: roundedBelanjaMaxValue, ticks: belanjaChartTicks } = useMemo(
-    () => getChartScale(maxBelanjaValue),
-    [maxBelanjaValue]
+  const roundedBelanjaMaxValue = Math.ceil(maxBelanjaValue / belanjaChartIncrement) * belanjaChartIncrement
+  const belanjaChartTicks: number[] = Array.from(
+    { length: roundedBelanjaMaxValue / belanjaChartIncrement + 1 },
+    (_, index) => index * belanjaChartIncrement
   )
 
-  const pembiayaanSectionData: PembiayaanKategoriItem[] = useMemo(() => {
-    const pembiayaanPenerimaan10Pct = Math.round(pembiayaanPenerimaanValue * 0.55)
-    const pembiayaanPenerimaan20Pct = pembiayaanPenerimaanValue - pembiayaanPenerimaan10Pct
+  const pembiayaanSectionData: PembiayaanKategoriItem[] = [
+    {
+      id: "penerimaan",
+      label: "Penerimaan",
+      chartLabel: "Penerimaan",
+      amount: "Rp 0,00",
+      totalValue: 70000000,
+      detail: [
+        { id: "silpa", uraian: "SILPA tahun sebelumnya", anggaran: "Rp 0,00", percentage: 55 },
+        { id: "pencairan", uraian: "Pencairan dana cadangan", anggaran: "Rp 0,00", percentage: 45 },
+      ],
+      totalAnggaran: "Rp 0,00",
+    },
+    {
+      id: "pengeluaran",
+      label: "Pengeluaran",
+      chartLabel: "Pengeluaran",
+      amount: "Rp 0,00",
+      totalValue: 0,
+      detail: [
+        { id: "modal", uraian: "Penyertaan modal desa", anggaran: "Rp 0,00", percentage: 100 },
+      ],
+      totalAnggaran: "Rp 0,00",
+    },
+  ]
 
-    const pembiayaanPengeluaran100Pct = pembiayaanPengeluaranValue
+  const pembiayaanChartIncrement = 100000000
+  const totalPembiayaanSectionValue = pembiayaanSectionData.reduce((sum, item) => sum + item.totalValue, 0)
+  const maxPembiayaanValue = Math.max(...pembiayaanSectionData.map((item) => item.totalValue), pembiayaanChartIncrement)
+  const roundedPembiayaanMaxValue = Math.ceil(maxPembiayaanValue / pembiayaanChartIncrement) * pembiayaanChartIncrement
+  const pembiayaanChartTicks: number[] = Array.from(
+    { length: roundedPembiayaanMaxValue / pembiayaanChartIncrement + 1 },
+    (_, index) => index * pembiayaanChartIncrement
+  )
 
-    return [
-      {
-        id: "penerimaan",
-        label: "Penerimaan",
-        chartLabel: "Penerimaan",
-        amount: formatRupiah(pembiayaanPenerimaanValue),
-        totalValue: pembiayaanPenerimaanValue,
-        detail: [
-          { id: "silpa", uraian: "SILPA tahun sebelumnya", anggaran: formatRupiah(pembiayaanPenerimaan10Pct), percentage: 55 },
-          { id: "pencairan", uraian: "Pencairan dana cadangan", anggaran: formatRupiah(pembiayaanPenerimaan20Pct), percentage: 45 },
-        ],
-        totalAnggaran: formatRupiah(pembiayaanPenerimaanValue),
-      },
-      {
-        id: "pengeluaran",
-        label: "Pengeluaran",
-        chartLabel: "Pengeluaran",
-        amount: formatRupiah(pembiayaanPengeluaranValue),
-        totalValue: pembiayaanPengeluaranValue,
-        detail: [
-          { id: "modal", uraian: "Penyertaan modal desa", anggaran: formatRupiah(pembiayaanPengeluaran100Pct), percentage: 100 },
-        ],
-        totalAnggaran: formatRupiah(pembiayaanPengeluaranValue),
-      },
-    ]
-  }, [pembiayaanPenerimaanValue, pembiayaanPengeluaranValue])
-
-  const totalPembiayaanSectionValue = useMemo(
-    () => pembiayaanSectionData.reduce((sum, item) => sum + item.totalValue, 0),
-    [pembiayaanSectionData]
-  )
-  const maxPembiayaanValue = useMemo(
-    () => Math.max(...pembiayaanSectionData.map((item) => item.totalValue), CHART_MIN_TICK_STEP),
-    [pembiayaanSectionData]
-  )
-  const { roundedMaxValue: roundedPembiayaanMaxValue, ticks: pembiayaanChartTicks } = useMemo(
-    () => getChartScale(maxPembiayaanValue),
-    [maxPembiayaanValue]
-  )
+  const years = ["2022", "2023", "2024", "2025", "2026"]
 
   return (
     <>
@@ -472,11 +455,8 @@ export default function APBDesa() {
           </div>
           <div className="relative">
             <select
-              value={selectedYearLabel}
-              onChange={(e) => {
-                const target = typedApbdList.find((item) => String(item.tahun) === e.target.value)
-                if (target) setSelectedYear(target.id)
-              }}
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
               className="appearance-none bg-white border border-gray-300 rounded-xl px-4 py-2 pr-10 text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
             >
               {years.map((year) => (
@@ -526,7 +506,7 @@ export default function APBDesa() {
                   </div>
                   <span className="text-sm font-medium text-gray-600">Pendapatan</span>
                 </div>
-                <p className="text-lg md:text-xl font-bold text-gray-800">{isDataLoading ? "Memuat..." : summaryData.pendapatan}</p>
+                <p className="text-lg md:text-xl font-bold text-gray-800">{summaryData.pendapatan}</p>
               </div>
               {/* Belanja Card */}
               <div className="bg-white rounded-xl shadow-[0_0_15px_rgba(0,0,0,0.1)] p-5 flex flex-col justify-center">
@@ -536,7 +516,7 @@ export default function APBDesa() {
                   </div>
                   <span className="text-sm font-medium text-gray-600">Belanja</span>
                 </div>
-                <p className="text-lg md:text-xl font-bold text-gray-800">{isDataLoading ? "Memuat..." : summaryData.belanja}</p>
+                <p className="text-lg md:text-xl font-bold text-gray-800">{summaryData.belanja}</p>
               </div>
             </div>
 
@@ -571,7 +551,7 @@ export default function APBDesa() {
                   </div>
                   <span className="text-sm font-medium text-gray-600">Surplus / Defisit</span>
                 </div>
-                <p className={`text-lg md:text-xl font-bold ${totalSurplus >= 0 ? "text-emerald-600" : "text-red-600"}`}>{isDataLoading ? "Memuat..." : summaryData.surplus}</p>
+                <p className="text-lg md:text-xl font-bold text-red-600">{summaryData.surplus}</p>
               </div>
             </div>
           </div>
@@ -588,7 +568,7 @@ export default function APBDesa() {
         {/* Pendapatan Desa */}
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">
-            Pendapatan Desa tahun {selectedYearLabel || "-"}
+            Pendapatan Desa tahun 2025
           </h2>
           <div className="space-y-6">
             <div className="relative bg-white rounded-xl shadow-[0_0_15px_rgba(0,0,0,0.1)] p-4 md:p-6 overflow-visible">
@@ -655,10 +635,7 @@ export default function APBDesa() {
                 </div>
               </div>
 
-              <div
-                className="ml-[104px] md:ml-[162px] mt-3 grid gap-4 text-center"
-                style={{ gridTemplateColumns: `repeat(${Math.max(1, pendapatan2025Data.length)}, minmax(0, 1fr))` }}
-              >
+              <div className="ml-[104px] md:ml-[162px] mt-3 grid grid-cols-3 gap-4 text-center">
                 {pendapatan2025Data.map((item) => (
                   <div key={`axis-${item.id}`} className="px-2">
                     <p className="text-sm font-medium text-gray-600">{item.amount}</p>
@@ -699,9 +676,7 @@ export default function APBDesa() {
                       </div>
 
                       <div className="md:w-40 flex items-center justify-end gap-2 md:gap-2.5">
-                        <span className={`whitespace-nowrap tabular-nums leading-none text-gray-900 ${getAmountTextClass(item.totalValue)}`}>
-                          {item.amount}
-                        </span>
+                        <span className="text-lg md:text-xl text-gray-900 leading-none">{item.amount}</span>
                         <span className="p-0.5 rounded-md text-gray-700" aria-hidden="true">
                           <ChevronDown
                             size={20}
@@ -826,10 +801,7 @@ export default function APBDesa() {
                 </div>
               </div>
 
-              <div
-                className="ml-[104px] md:ml-[162px] mt-3 grid gap-2 md:gap-3 text-center"
-                style={{ gridTemplateColumns: `repeat(${Math.max(1, belanjaSectionData.length)}, minmax(0, 1fr))` }}
-              >
+              <div className="ml-[104px] md:ml-[162px] mt-3 grid grid-cols-5 gap-2 md:gap-3 text-center">
                 {belanjaSectionData.map((item) => (
                   <div key={`belanja-axis-${item.id}`} className="px-1">
                     <p className="text-[11px] md:text-xs text-gray-600 leading-tight break-words">{item.chartLabel}</p>
@@ -869,9 +841,7 @@ export default function APBDesa() {
                       </div>
 
                       <div className="md:w-40 flex items-center justify-end gap-2 md:gap-2.5">
-                        <span className={`whitespace-nowrap tabular-nums leading-none text-gray-900 ${getAmountTextClass(item.totalValue)}`}>
-                          {item.amount}
-                        </span>
+                        <span className="text-lg md:text-xl text-gray-900 leading-none">{item.amount}</span>
                         <span className="p-0.5 rounded-md text-gray-700" aria-hidden="true">
                           <ChevronDown
                             size={20}
@@ -1042,9 +1012,7 @@ export default function APBDesa() {
                       </div>
 
                       <div className="md:w-40 flex items-center justify-end gap-2 md:gap-2.5">
-                        <span className={`whitespace-nowrap tabular-nums leading-none text-gray-900 ${getAmountTextClass(item.totalValue)}`}>
-                          {item.amount}
-                        </span>
+                        <span className="text-lg md:text-xl text-gray-900 leading-none">{item.amount}</span>
                         <span className="p-0.5 rounded-md text-gray-700" aria-hidden="true">
                           <ChevronDown
                             size={20}

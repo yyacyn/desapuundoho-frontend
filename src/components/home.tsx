@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 // Tentang Kami
 import {
   Users,
@@ -24,7 +24,12 @@ import {
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import NewsCard from "./newscard";
 import GaleriItem from "./galeriitem";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useGallery } from "../context/GalleryContext";
+import { useNews } from "../context/NewsContext";
+import { useAPBDes } from "../context/APBDesaContext";
+
+
 
 // --------------------------------------------------------------
 // Header
@@ -36,7 +41,7 @@ export default function Header() {
         alt="Beautiful landscape of Desa Puundoho"
         className="absolute inset-0 w-full h-full object-cover"
         src="/assets/home/home-bg.png"
-        />
+      />
       <div className="absolute inset-0 hero-gradient"></div>
       <div className="relative z-10 text-center px-6">
         <p className="text-white text-lg md:text-2xl font-medium mb-2 opacity-90">
@@ -67,7 +72,7 @@ export function TentangKami() {
     <section className="max-w-7xl mx-auto px-6 py-20">
       <div className="grid md:grid-cols-2 gap-16 items-center">
 
-        <div > 
+        <div >
           <div className="mb-8">
             <div className="w-16 h-1 bg-[#2D7A5F] mb-3"></div>
             <h2 className="text-3xl font-bold text-emerald-700 mb-4">
@@ -124,13 +129,13 @@ export function Sambutan() {
   return (
     <section className="max-w-7xl mx-auto px-6 py-20">
       <div className="bg-white w-full flex flex-col md:flex-row gap-8 items-start relative">
-        
+
         {/* Bagian Kiri: Foto dan Nama */}
         <div className="w-full md:w-1/3 flex flex-col items-center">
           <div className="border-2 border-gray-200 rounded-2xl w-full overflow-hidden shadow-sm">
-            <img 
-              src="/assets/home/syamsir.png" 
-              alt="Syamsir Sabara" 
+            <img
+              src="/assets/home/syamsir.png"
+              alt="Syamsir Sabara"
               className="w-full h-full object-cover rounded-xl"
             />
           </div>
@@ -158,17 +163,17 @@ export function Sambutan() {
               <p className="text-gray-700 font-medium mb-4">
                 Selamat datang di Website resmi Desa Puundoho
               </p>
-              
+
               <div className="max-h-40 overflow-y-auto pr-4 custom-scrollbar">
                 <p className="text-gray-600 leading-relaxed text-sm md:text-base mb-4">
-                  Semoga memudahkan pengunjung untuk mencari informasi terkait desa Kami, 
-                  selain itu kami sementara berbenah untuk transformasi digital untuk desa mulai 
-                  dari pelayanan, pengelolaan administrasi dan keterbukaan informasi untuk 
-                  warga Kami. Semoga memudahkan pengunjung untuk mencari informasi terkait 
+                  Semoga memudahkan pengunjung untuk mencari informasi terkait desa Kami,
+                  selain itu kami sementara berbenah untuk transformasi digital untuk desa mulai
+                  dari pelayanan, pengelolaan administrasi dan keterbukaan informasi untuk
+                  warga Kami. Semoga memudahkan pengunjung untuk mencari informasi terkait
                   desa Kami, selain itu kami sementara berbenah.
                 </p>
                 <p className="text-gray-600 leading-relaxed text-sm md:text-base">
-                  Kami berkomitmen untuk terus meningkatkan kualitas layanan publik melalui integrasi 
+                  Kami berkomitmen untuk terus meningkatkan kualitas layanan publik melalui integrasi
                   teknologi informasi yang tepat sasaran demi kesejahteraan seluruh masyarakat Puundoho.
                 </p>
               </div>
@@ -212,6 +217,42 @@ export function APBDesa() {
     { hari: 'Jumat', pengunjung: 122 },
   ];
 
+  const { apbdList, pendapatanData, pengeluaranData, setSelectedYear, loading } = useAPBDes();
+
+  const currentYear = new Date().getFullYear();
+
+  const isInitialMount = useRef(true);
+  // 1. Atur agar context mengarah ke tahun sekarang saat komponen dimuat
+  // useEffect(() => {
+  //   const currentAPBD = apbdList.find(a => a.tahun === currentYear);
+  //   if (currentAPBD) {
+  //     setSelectedYear(currentAPBD.id);
+  //   }
+  // }, [apbdList, setSelectedYear, currentYear]);
+
+  useEffect(() => {
+    // Hanya jalankan jika ini mount pertama dan list sudah tersedia
+    if (isInitialMount.current && apbdList.length > 0) {
+      const currentAPBD = apbdList.find(a => a.tahun === currentYear);
+      if (currentAPBD) {
+        setSelectedYear(currentAPBD.id);
+        isInitialMount.current = false; // Kunci agar tidak terpanggil lagi
+      }
+    }
+  }, [apbdList, setSelectedYear, currentYear]);
+
+  // 2. Hitung Total Pendapatan & Belanja secara real-time dari data context
+  const totalPendapatan = useMemo(() =>
+    pendapatanData.reduce((acc, curr) => acc + curr.jumlah, 0),
+    [pendapatanData]);
+
+  const totalBelanja = useMemo(() =>
+    pengeluaranData.reduce((acc, curr) => acc + curr.jumlah, 0),
+    [pengeluaranData]);
+
+  // Fungsi helper format rupiah
+  const formatRupiah = (val: number) =>
+    new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(val);
   return (
     <section className="max-w-7xl mx-auto px-6 py-20">
       <div className="flex flex-col lg:flex-row gap-12">
@@ -220,7 +261,7 @@ export function APBDesa() {
         <div className="w-full lg:w-1/2 space-y-6">
           <div className="space-y-2">
             <div className="w-16 h-1 bg-[#2D7A5F] mb-3"></div>
-            <h1 className="text-[#2D7A5F] text-4xl font-bold">APB DESA 2026</h1>
+            <h1 className="text-[#2D7A5F] text-4xl font-bold">APB DESA {currentYear}</h1>
             <p className="text-gray-600 leading-relaxed max-w-md">
               Akses cepat dan transparan terhadap APB Desa serta proyek pembangunan
             </p>
@@ -231,7 +272,7 @@ export function APBDesa() {
             <div className="border border-gray-100 rounded-2xl p-6 shadow-sm bg-white hover:shadow-md transition-shadow">
               <p className="text-gray-700 font-medium mb-2">Pendapatan Desa</p>
               <h2 className="text-[#2D7A5F] text-3xl md:text-4xl font-bold">
-                Rp569.000.000,00
+                {loading ? "Memuat..." : formatRupiah(totalPendapatan)}
               </h2>
             </div>
 
@@ -239,7 +280,7 @@ export function APBDesa() {
             <div className="border border-gray-100 rounded-2xl p-6 shadow-sm bg-white hover:shadow-md transition-shadow">
               <p className="text-gray-700 font-medium mb-2">Belanja Desa</p>
               <h2 className="text-[#2D7A5F] text-3xl md:text-4xl font-bold">
-                Rp569.000.000,00
+                {loading ? "Memuat..." : formatRupiah(totalBelanja)}
               </h2>
             </div>
           </div>
@@ -258,8 +299,8 @@ export function APBDesa() {
             Jumlah Pengunjung
           </div>
 
-          <ResponsiveContainer 
-            width="100%" 
+          <ResponsiveContainer
+            width="100%"
             height="100%"
             style={{ outline: 'none' }}
           >
@@ -304,47 +345,67 @@ export function APBDesa() {
 // Berita
 // --------------------------------------------------------------
 export const BeritaSection = () => {
-  const newsData = [
-    {
-      id: 1,
-      category: "Category",
-      title: "Lowongan Kerja di PT Kodehana cabang kota Bogor",
-      date: "22 Februari 2026",
-      imageUrl: "https://via.placeholder.com/400x300?text=Stay+Healthy",
-    },
-    {
-      id: 2,
-      category: "Category",
-      title: "Lowongan Kerja di PT Kodehana cabang kota Bogor",
-      date: "22 Februari 2026",
-      imageUrl: "https://via.placeholder.com/400x300?text=Stay+Healthy",
-    },
-    {
-      id: 3,
-      category: "Category",
-      title: "Lowongan Kerja di PT Kodehana cabang kota Bogor",
-      date: "22 Februari 2026",
-      imageUrl: "https://via.placeholder.com/400x300?text=Stay+Healthy",
-    },
-  ];
+  const { articles, loading } = useNews();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const navigate = useNavigate();
+  if (loading) return <div className="text-white text-center py-10">Memuat Berita...</div>;
+
+  if (articles.length === 0) return null;
+
+  // Tentukan berapa banyak gambar yang mau tampil (misal: 3)
+  const itemsPerPage = 3;
+
+  // Fungsi Navigasi
+  const nextSlide = () => {
+    if (currentIndex + itemsPerPage < articles.length) {
+      setCurrentIndex(currentIndex + itemsPerPage);
+    }
+  };
+
+  const prevSlide = () => {
+    if (currentIndex - itemsPerPage >= 0) {
+      setCurrentIndex(currentIndex - itemsPerPage);;
+    } else {
+      setCurrentIndex(0); // Ke halaman pertama jika mundur melampaui 0
+    }
+  };
+
+  const handlePostClick = (post: { id: number | string;[key: string]: unknown }) => {
+    navigate(`/detail-berita/${post.id}`, { state: { post } });
+  };
+
+
+  // Ambil 3 berita terbaru untuk di Home
+  const latestNews = articles.slice(currentIndex, currentIndex + itemsPerPage);
+
 
   return (
     <section className="relative w-full">
-      
+
       {/* Background Hijau */}
       <div className="bg-[#2D7A5F] pt-20 pb-40 px-6 md:px-20">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            
+
             <div className="space-y-4">
               <div className="w-16 h-1 bg-[#1a4d3c]" />
               <h2 className="text-white text-5xl font-bold">Berita</h2>
 
               <div className="flex gap-3">
-                <button className="p-3 bg-white text-gray-800 rounded-full hover:bg-gray-100 transition shadow-md">
+                <button
+                  onClick={prevSlide}
+                  disabled={currentIndex === 0}
+                  // className={`p-2 rounded-full transition-colors ${currentIndex === 0 ? 'bg-gray-200 text-gray-400' : 'bg-[#2D7A5F] text-white hover:bg-[#235d49]'}`}
+                  className="p-3 bg-white text-gray-800 rounded-full hover:bg-gray-100 transition shadow-md"
+                >
                   <ChevronLeft size={20} />
                 </button>
-                <button className="p-3 bg-white text-gray-800 rounded-full hover:bg-gray-100 transition shadow-md">
+                <button
+                  onClick={nextSlide}
+                  disabled={currentIndex + itemsPerPage >= articles.length}
+                  // className={`p-2 rounded-full transition-colors ${currentIndex + itemsPerPage >= articles.length ? 'bg-gray-200 text-gray-400' : 'bg-[#2D7A5F] text-white hover:bg-[#235d49]'}`}
+                  className="p-3 bg-white text-gray-800 rounded-full hover:bg-gray-100 transition shadow-md"
+                >
                   <ChevronRight size={20} />
                 </button>
               </div>
@@ -361,14 +422,27 @@ export const BeritaSection = () => {
       {/* Floating Cards */}
       <div className="max-w-7xl mx-auto px-6 md:px-20 -mt-30">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {newsData.map((item) => (
-            <NewsCard
+          {latestNews.map((item) => (
+            <a
               key={item.id}
-              category={item.category}
-              title={item.title}
-              date={item.date}
-              imageUrl={item.imageUrl}
-            />
+              onClick={(e) => {
+                e.preventDefault();
+                handlePostClick(item);
+              }}
+            >
+              <NewsCard
+                key={item.id}
+                id={item.id}
+                category={item.category || "Berita"}
+                title={item.title}
+                date={(item.created_at ? new Date(item.created_at).toLocaleDateString("id-ID", {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric'
+                }) : "-")}
+                imageUrl={item.cover_image || "/assets/home/berita.jpg"}
+              />
+            </a>
           ))}
         </div>
 
@@ -392,15 +466,33 @@ export const BeritaSection = () => {
 // Galeri
 // --------------------------------------------------------------
 export const GaleriSection = () => {
-  // Data dummy foto galeri
-  const photos = [
-    { id: 1, src: "/assets/home/tentang.png", alt: "Gedung Serbaguna 1" },
-    { id: 2, src: "/assets/home/tentang.png", alt: "Gedung Serbaguna 2" },
-    { id: 3, src: "/assets/home/tentang.png", alt: "Gedung Serbaguna 3" },
-    { id: 4, src: "/assets/home/tentang.png", alt: "Gedung Serbaguna 4" },
-    { id: 5, src: "/assets/home/tentang.png", alt: "Gedung Serbaguna 5" },
-    { id: 6, src: "/assets/home/tentang.png", alt: "Gedung Serbaguna 6" },
-  ];
+  const { items, loading } = useGallery();
+  // State untuk melacak index gambar pertama yang tampil
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  if (loading) return <div className="py-20 text-center">Memuat...</div>;
+  if (items.length === 0) return null;
+
+  // Tentukan berapa banyak gambar yang mau tampil (misal: 3)
+  const itemsPerPage = 6;
+
+  // Fungsi Navigasi
+  const nextSlide = () => {
+    if (currentIndex + itemsPerPage < items.length) {
+      setCurrentIndex(currentIndex + itemsPerPage);
+    }
+  };
+
+  const prevSlide = () => {
+    if (currentIndex - itemsPerPage >= 0) {
+      setCurrentIndex(currentIndex - itemsPerPage);;
+    } else {
+      setCurrentIndex(0); // Ke halaman pertama jika mundur melampaui 0
+    }
+  };
+
+  // Ambil potongan data berdasarkan currentIndex
+  const displayItems = items.slice(currentIndex, currentIndex + itemsPerPage);
 
   return (
     <section className="bg-white py-16 px-6 md:px-20 max-w-7xl mx-auto">
@@ -408,13 +500,19 @@ export const GaleriSection = () => {
       <div className="flex flex-col items-center mb-12 relative">
         <div className="w-16 h-1 bg-[#2D7A5F] mb-4"></div>
         <h2 className="text-[#2D7A5F] text-4xl font-bold">Galeri</h2>
-        
+
         {/* Tombol Navigasi (Kanan Atas) */}
         <div className="hidden md:flex gap-3 absolute right-0 top-1/2 -translate-y-1/2">
-          <button className="p-2 bg-[#2D7A5F] text-white rounded-full hover:bg-[#235d49] transition-colors">
+          <button
+            onClick={prevSlide}
+            disabled={currentIndex === 0}
+            className={`p-2 rounded-full transition-colors ${currentIndex === 0 ? 'bg-gray-200 text-gray-400' : 'bg-[#2D7A5F] text-white hover:bg-[#235d49]'}`}>
             <ChevronLeft size={24} />
           </button>
-          <button className="p-2 bg-[#2D7A5F] text-white rounded-full hover:bg-[#235d49] transition-colors">
+          <button
+            onClick={nextSlide}
+            disabled={currentIndex + itemsPerPage >= items.length}
+            className={`p-2 rounded-full transition-colors ${currentIndex + itemsPerPage >= items.length ? 'bg-gray-200 text-gray-400' : 'bg-[#2D7A5F] text-white hover:bg-[#235d49]'}`}>
             <ChevronRight size={24} />
           </button>
         </div>
@@ -422,20 +520,28 @@ export const GaleriSection = () => {
 
       {/* Grid Galeri */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {photos.map((photo) => (
-          <GaleriItem 
-            key={photo.id}
-            imageUrl={photo.src}
-            altText={photo.alt} caption={undefined} />
+        {displayItems.map((item, index) => (
+          <GaleriItem
+            key={item.id ?? index}
+            imageUrl={item.imageUrl || (item.images && item.images[0]) || ""}
+            caption={item.caption || ""}
+            altText={"Galeri"} />
         ))}
       </div>
 
       {/* Navigasi Mobile (Muncul hanya di layar kecil) */}
       <div className="flex justify-center gap-4 mt-8 md:hidden">
-        <button className="p-3 bg-[#2D7A5F] text-white rounded-full">
+        <button
+          onClick={prevSlide}
+          disabled={currentIndex === 0}
+          className="p-3 bg-[#2D7A5F] text-white rounded-full active:bg-[#235d49]">
           <ChevronLeft size={20} />
         </button>
-        <button className="p-3 bg-[#2D7A5F] text-white rounded-full">
+        <button
+          onClick={nextSlide}
+          disabled={currentIndex + itemsPerPage >= items.length}
+          className="p-3 bg-[#2D7A5F] text-white rounded-full active:bg-[#235d49]"
+        >
           <ChevronRight size={20} />
         </button>
       </div>
