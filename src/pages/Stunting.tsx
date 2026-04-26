@@ -1,65 +1,122 @@
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { ChevronDown } from "lucide-react"
 import Navbar from "../components/navbar"
 import Footer from "../components/footer"
+import { apiFetch } from "../api"
 
 interface StuntingYearData {
   year: string
-  penduduk: number
+  kasus: number
 }
 
-interface BansosDetailItem {
+interface StuntingItem {
+  id: number
+  status: string
+  created_at?: string
+  tanggal_pemeriksaan?: string
+}
+
+interface StuntingDetailItem {
   id: string
   label: string
   percentage: number
   amount: string
 }
 
-interface BansosAccordionItem {
+interface StuntingAccordionItem {
   id: string
   title: string
   total: string
-  details: BansosDetailItem[]
+  details: StuntingDetailItem[]
 }
 
-const stuntingData: StuntingYearData[] = [
-  { year: "2021", penduduk: 540 },
-  { year: "2022", penduduk: 450 },
-  { year: "2023", penduduk: 380 },
-  { year: "2024", penduduk: 360 },
-  { year: "2025", penduduk: 320 },
-  { year: "2026", penduduk: 250 },
-]
+const STATUS_ORDER = ["Stunting", "Beresiko", "Normal"]
 
-const yAxisTicks: number[] = [0, 250, 500, 750, 1000]
-
-const bansosAccordionData: BansosAccordionItem[] = [
-  {
-    id: "bansos",
-    title: "Laporan Realisasi Anggaran Bansos`",
-    total: "Rp 0,00",
-    details: [
-      {
-        id: "dana-pemerintah",
-        label: "Dana Pemerintah",
-        percentage: 50,
-        amount: "Rp 1.000.000",
-      },
-      {
-        id: "dana-masyarakat",
-        label: "Hasil Penggalangan Dana Masyarakat",
-        percentage: 50,
-        amount: "Rp 1.000.000",
-      },
-    ],
-  },
-]
+const getNumericChartScale = (maxValue: number) => {
+  const normalizedMax = Math.max(maxValue, 10)
+  const step = normalizedMax <= 20 ? 5 : normalizedMax <= 100 ? 20 : normalizedMax <= 250 ? 50 : 100
+  const roundedMax = Math.ceil(normalizedMax / step) * step
+  const ticks = Array.from({ length: Math.floor(roundedMax / step) + 1 }, (_, i) => i * step)
+  return { roundedMax, ticks }
+}
 
 export default function Stunting() {
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [records, setRecords] = useState<StuntingItem[]>([])
   const [hoveredYear, setHoveredYear] = useState<string | null>(null)
   const [openAccordionId, setOpenAccordionId] = useState<string | null>(null)
 
-  const maxValue = 1000
+  useEffect(() => {
+    const fetchStunting = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const res = await apiFetch("/stunting", { cache: "no-store" })
+        const json = await res.json()
+        if (!res.ok) {
+          throw new Error(json.error || "Gagal mengambil data stunting")
+        }
+        setRecords((json.stunting || []) as StuntingItem[])
+      } catch (err) {
+        console.error(err)
+        setError("Gagal terhubung ke server untuk data stunting.")
+        setRecords([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStunting()
+  }, [])
+
+  const stuntingData = useMemo<StuntingYearData[]>(() => {
+    const grouped = records.reduce<Record<string, number>>((acc, item) => {
+      const sourceDate = item.tanggal_pemeriksaan || item.created_at
+      const year = sourceDate ? String(new Date(sourceDate).getFullYear()) : String(new Date().getFullYear())
+      if (year === "NaN") return acc
+      acc[year] = (acc[year] || 0) + 1
+      return acc
+    }, {})
+
+    return Object.entries(grouped)
+      .map(([year, kasus]) => ({ year, kasus }))
+      .sort((a, b) => Number(a.year) - Number(b.year))
+  }, [records])
+
+  const { roundedMax: maxValue, ticks: yAxisTicks } = useMemo(() => {
+    const maxChartValue = stuntingData.length > 0 ? Math.max(...stuntingData.map((item) => item.kasus)) : 0
+    return getNumericChartScale(maxChartValue)
+  }, [stuntingData])
+
+  const statusSummaryData = useMemo<StuntingAccordionItem[]>(() => {
+    const total = records.length
+    const grouped = records.reduce<Record<string, number>>((acc, item) => {
+      const key = item.status || "Normal"
+      acc[key] = (acc[key] || 0) + 1
+      return acc
+    }, {})
+
+    const details: StuntingDetailItem[] = STATUS_ORDER.map((status) => {
+      const count = grouped[status] || 0
+      const percentage = total > 0 ? Math.round((count / total) * 100) : 0
+      return {
+        id: status.toLowerCase(),
+        label: status,
+        percentage,
+        amount: `${count} Anak`,
+      }
+    })
+
+    return [
+      {
+        id: "status-summary",
+        title: "Ringkasan Status Stunting",
+        total: `${total} Anak`,
+        details,
+      },
+    ]
+  }, [records])
 
   return (
     <>
@@ -68,11 +125,12 @@ export default function Stunting() {
       <section className="bg-white py-12 px-4 md:px-28 w-full mx-auto pt-20">
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-[#298064]">Data Stunting</h1>
+          {error && <p className="mt-2 text-sm font-medium text-red-600">{error}</p>}
         </div>
 
         <div className="mb-8">
           <div className="relative bg-white rounded-xl shadow-[0_0_15px_rgba(0,0,0,0.1)] p-4 md:p-6 overflow-visible">
-            <p className="text-sm font-medium text-gray-700 mb-2">Penduduk (Jiwa)</p>
+            <p className="text-sm font-medium text-gray-700 mb-2">Jumlah Kasus (Anak)</p>
 
             <div className="grid grid-cols-[96px_minmax(0,1fr)] md:grid-cols-[150px_minmax(0,1fr)] gap-2 md:gap-3">
               <div className="relative h-72 text-[10px] md:text-xs text-gray-500">
@@ -103,7 +161,7 @@ export default function Stunting() {
                   ))}
 
                   <div className="absolute inset-x-3 md:inset-x-6 bottom-0 top-0 flex items-end gap-2 md:gap-6">
-                    {stuntingData.map((item) => {
+                    {(stuntingData.length > 0 ? stuntingData : [{ year: "-", kasus: 0 }]).map((item) => {
                       const isHovered = hoveredYear === item.year
 
                       return (
@@ -111,14 +169,13 @@ export default function Stunting() {
                           <div className="relative w-full max-w-[220px] h-full overflow-visible">
                             <button
                               type="button"
-                              className={`absolute left-0 right-0 bottom-0 rounded-t-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
-                                isHovered ? "bg-emerald-500" : "bg-emerald-600"
-                              }`}
+                              className={`absolute left-0 right-0 bottom-0 rounded-t-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 ${isHovered ? "bg-emerald-500" : "bg-emerald-600"
+                                }`}
                               style={{
-                                height: `${(item.penduduk / maxValue) * 100}%`,
-                                minHeight: item.penduduk === 0 ? "4px" : undefined,
+                                height: `${(item.kasus / maxValue) * 100}%`,
+                                minHeight: item.kasus === 0 ? "4px" : undefined,
                               }}
-                              aria-label={`${item.year}: ${item.penduduk} Penduduk`}
+                              aria-label={`${item.year}: ${item.kasus} Kasus`}
                               onMouseEnter={() => setHoveredYear(item.year)}
                               onMouseLeave={() => setHoveredYear(null)}
                               onFocus={() => setHoveredYear(item.year)}
@@ -128,9 +185,9 @@ export default function Stunting() {
                             {isHovered && (
                               <div
                                 className="absolute left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs font-medium px-3 py-1.5 rounded-md shadow-md whitespace-nowrap pointer-events-none"
-                                style={{ bottom: `calc(${(item.penduduk / maxValue) * 100}% + 8px)` }}
+                                style={{ bottom: `calc(${(item.kasus / maxValue) * 100}% + 8px)` }}
                               >
-                                {item.penduduk} Penduduk
+                                {item.kasus} Kasus
                               </div>
                             )}
                           </div>
@@ -142,8 +199,11 @@ export default function Stunting() {
               </div>
             </div>
 
-            <div className="ml-[104px] md:ml-[162px] mt-3 grid grid-cols-6 gap-2 md:gap-3 text-center">
-              {stuntingData.map((item) => (
+            <div
+              className="ml-[104px] md:ml-[162px] mt-3 grid gap-2 md:gap-3 text-center"
+              style={{ gridTemplateColumns: `repeat(${Math.max(1, stuntingData.length)}, minmax(0, 1fr))` }}
+            >
+              {(stuntingData.length > 0 ? stuntingData : [{ year: "-", kasus: 0 }]).map((item) => (
                 <div key={`axis-${item.year}`} className="px-1">
                   <p className="text-sm text-gray-600 leading-tight">{item.year}</p>
                 </div>
@@ -157,7 +217,7 @@ export default function Stunting() {
         </div>
 
         <div className="space-y-4 mb-8">
-          {bansosAccordionData.map((item) => {
+          {statusSummaryData.map((item) => {
             const isOpen = openAccordionId === item.id
 
             return (
@@ -189,9 +249,8 @@ export default function Stunting() {
 
                 <div
                   id={`detail-${item.id}`}
-                  className={`overflow-hidden transition-all duration-200 ease-out ${
-                    isOpen ? "max-h-[520px] opacity-100" : "max-h-0 opacity-0 pointer-events-none"
-                  }`}
+                  className={`overflow-hidden transition-all duration-200 ease-out ${isOpen ? "max-h-[520px] opacity-100" : "max-h-0 opacity-0 pointer-events-none"
+                    }`}
                   aria-hidden={!isOpen}
                 >
                   <div className="border-t border-gray-200 px-4 md:px-6 py-4 bg-gray-50 space-y-4">

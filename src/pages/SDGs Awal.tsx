@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import Navbar from "../components/navbar"
 import Footer from "../components/footer"
-import { apiFetch } from "../api"
+import API_CONFIG from "../config/api"
 
 interface SdgsItem {
   id: number
@@ -47,6 +47,11 @@ const getGoalColorClass = (goal: number): string => {
   return colorMap[goal] || "text-[#298064] bg-[#298064]"
 }
 
+const buildApiUrl = (endpoint: string): string =>
+  API_CONFIG.BASE_URL.includes("api.php")
+    ? `${API_CONFIG.BASE_URL}?path=${endpoint}`
+    : `${API_CONFIG.BASE_URL}/${endpoint}`
+
 export default function SDGs() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -58,7 +63,7 @@ export default function SDGs() {
       setError(null)
 
       try {
-        const res = await apiFetch("/sdgs")
+        const res = await fetch(buildApiUrl("sdgs"))
         if (!res.ok) {
           throw new Error("Gagal mengambil data SDGs")
         }

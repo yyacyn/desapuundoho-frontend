@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 import { Download } from "lucide-react"
 import Navbar from "../components/navbar"
 import Footer from "../components/footer"
-import { apiFetch } from "../api"
+import API_CONFIG from "../config/api"
 
 interface IdmMetricCard {
   label: string
@@ -23,10 +23,7 @@ interface IdmSummary {
 }
 
 interface IdmRow {
-  NO?: number | string | null
   INDIKATOR?: string
-  KETERANGAN?: string
-  KEGIATAN?: string
   SKOR?: string | number
 }
 
@@ -46,6 +43,12 @@ interface ChartPoint {
 }
 
 const IDM_YEARS = [2025, 2024, 2023, 2022, 2021, 2020]
+
+const buildApiUrl = (endpoint: string): string =>
+  API_CONFIG.BASE_URL.includes("api.php")
+    ? `${API_CONFIG.BASE_URL}?path=${endpoint}`
+    : `${API_CONFIG.BASE_URL}/${endpoint}`
+
 const GRID_TICKS: number[] = Array.from({ length: 11 }, (_, index) => index / 10)
 
 function formatScore(value: number): string {
@@ -224,12 +227,6 @@ function MetricCard({ label, value }: IdmMetricCard) {
   )
 }
 
-function scoreColor(score: number): string {
-  if (score >= 4) return "bg-[#298064] text-white"
-  if (score >= 3) return "bg-yellow-500/20 text-yellow-500"
-  return "bg-red-500/20 text-red-400"
-}
-
 export default function IDM() {
   const [idmYear, setIdmYear] = useState<number>(2024)
   const [idmData, setIdmData] = useState<IdmApiResponse | null>(null)
@@ -244,7 +241,7 @@ export default function IDM() {
       setError(null)
 
       try {
-        const res = await apiFetch(`/idm?tahun=${idmYear}`)
+        const res = await fetch(buildApiUrl(`idm?tahun=${idmYear}`))
         if (!res.ok) {
           throw new Error(`Gagal mengambil data IDM tahun ${idmYear}`)
         }
@@ -274,7 +271,7 @@ export default function IDM() {
       try {
         const results = await Promise.all(
           IDM_YEARS.map(async (year) => {
-            const res = await apiFetch(`/idm?tahun=${year}`)
+            const res = await fetch(buildApiUrl(`idm?tahun=${year}`))
             if (!res.ok) return null
             const json = (await res.json()) as IdmApiResponse
             const value = Number(json?.mapData?.SUMMARIES?.SKOR_SAAT_INI || 0)
@@ -349,10 +346,10 @@ export default function IDM() {
 
           <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-2">
             <div className="grid grid-cols-1 gap-4">
-              <MainInfoCard label={`SKOR IDM ${idmYear}`} value={loading ? "Memuat..." : currentScore.toFixed(4)} />
+              <MainInfoCard label={`SKOR IDM ${idmYear}`} value={loading ? "..." : currentScore.toFixed(4)} />
               <div className="rounded-2xl border border-gray-300 bg-[#f8f8f8] shadow-[0_0_15px_rgba(0,0,0,0.08)] px-6 py-4">
                 <p className="text-sm font-semibold text-black md:text-base">STATUS IDM {idmYear}</p>
-                <p className="mt-4 text-center text-4xl font-bold text-[#298064]">{loading ? "Memuat..." : currentStatus}</p>
+                <p className="mt-4 text-center text-4xl font-bold text-[#298064]">{loading ? "..." : currentStatus}</p>
               </div>
             </div>
 
@@ -392,47 +389,6 @@ export default function IDM() {
               ) : (
                 <IdmTrendChart yearlyScores={yearlyScores} />
               )}
-            </div>
-          </div>
-          <div className="mt-14 flex flex-col gap-3">
-            <h2 className="text-3xl font-bold text-[#298064] md:text-4xl">Indikator Rekomendasi Pembangunan</h2>
-            <p className="text-sm leading-relaxed text-black md:text-base">
-              Rekomendasi dari pusat berdasarkan kekurangan pilar penunjang Indeks Desa Membangun.
-            </p>
-
-            <div className="rounded-xl overflow-hidden border border-gray-300 bg-[#f8f8f8] shadow-[0_0_15px_rgba(0,0,0,0.08)]">
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[860px] text-left text-sm whitespace-nowrap">
-                  <thead className="bg-[#4A977E] text-[10px] uppercase tracking-wider text-[#FFFFFF] sm:text-xs">
-                    <tr>
-                      <th className="border-b border-[#4A977E] p-4">Indikator Terukur</th>
-                      <th className="border-b border-[#4A977E] p-4">Keterangan Saat Ini</th>
-                      <th className="w-28 border-b border-[#4A977E] p-4 text-center">Skor</th>
-                      <th className="border-b border-[#4A977E] p-4">Saran Kegiatan Intervensi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.filter((row) => row.NO !== null && row.NO !== undefined).map((row, idx) => {
-                      const rowScore = Number(row.SKOR || 0)
-
-                      return (
-                        <tr key={`${row.INDIKATOR || "row"}-${idx}`} className="border-b border-[#E5E7EB] bg-[#F8F8F8] transition-colors hover:bg-white">
-                          <td className="max-w-[220px] truncate p-4 font-medium text-black" title={row.INDIKATOR}>{row.INDIKATOR || "-"}</td>
-                          <td className="max-w-[280px] truncate p-4 text-xs text-gray-700" title={row.KETERANGAN}>{row.KETERANGAN || "-"}</td>
-                          <td className="p-4 text-center">
-                            <span className={`inline-block h-6 w-6 rounded leading-6 text-xs font-semibold font-mono ${scoreColor(rowScore)}`}>
-                              {rowScore}
-                            </span>
-                          </td>
-                          <td className={`max-w-[340px] truncate p-4 text-xs ${row.KEGIATAN === "-" ? "italic text-[#6B6B70]" : "text-orange-500"}`} title={row.KEGIATAN}>
-                            {row.KEGIATAN && row.KEGIATAN !== "-" ? row.KEGIATAN : "Sudah memenuhi / Tidak Butuh Intervensi"}
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
             </div>
           </div>
         </div>
