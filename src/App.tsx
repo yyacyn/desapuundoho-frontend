@@ -2,11 +2,13 @@ import { useEffect } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
 import Berita from './pages/Berita'
+import BeritaCopy from './pages/Beritacopy'
 import DetailBerita from './pages/DetailBerita'
 import Galeri from './pages/Galeri'
 import Profil from './pages/Profil'
 import APBDesa from './pages/APBDesa'
 import Stunting from './pages/Stunting'
+import Pengaduan from './pages/pengaduan'
 import Bansos from './pages/Bansos'
 import SDGs from './pages/SDGs'
 import IDM from './pages/IDM'
@@ -29,10 +31,12 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/berita" element={<Berita />} />
+              <Route path="/beritacopy" element={<BeritaCopy />} />
               <Route path="/detail-berita/:id" element={<DetailBerita />} />
               <Route path="/galeri" element={<Galeri />} />
               <Route path="/profil" element={<Profil />} />
               <Route path="/idm" element={<IDM />} />
+              <Route path="/pengaduan" element={<Pengaduan />} />
 
               {/* Infografis Group */}
               <Route path="/infografis/apbdesa" element={<APBDesa />} />

@@ -31,38 +31,38 @@ const dummyPosts = [
     image: "./assets/home/berita.jpg",
     link: "#",
   },
-  {
-    id: 4,
-    category: "Berita",
-    title: "Pelatihan UMKM untuk Ibu-Ibu PKK",
-    date: "20 Juli 2026",
-    image: "./assets/home/berita.jpg",
-    link: "#",
-  },
-  {
-    id: 5,
-    category: "Kegiatan Desa",
-    title: "Peringatan Hari Kemerdekaan RI ke-81",
-    date: "17 Agustus 2026",
-    image: "./assets/home/berita.jpg",
-    link: "#",
-  },
-  {
-    id: 6,
-    category: "Pengumuman",
-    title: "Jadwal Posyandu Bulan Maret 2026",
-    date: "15 Juli 2026",
-    image: "./assets/home/berita.jpg",
-    link: "#",
-  },
-  {
-    id: 7,
-    category: "Berita",
-    title: "Panen Raya Padi Bersama Kelompok Tani",
-    date: "10 Juli 2026",
-    image: "./assets/home/berita.jpg",
-    link: "#",
-  },
+  // {
+  //   id: 4,
+  //   category: "Berita",
+  //   title: "Pelatihan UMKM untuk Ibu-Ibu PKK",
+  //   date: "20 Juli 2026",
+  //   image: "./assets/home/berita.jpg",
+  //   link: "#",
+  // },
+  // {
+  //   id: 5,
+  //   category: "Kegiatan Desa",
+  //   title: "Peringatan Hari Kemerdekaan RI ke-81",
+  //   date: "17 Agustus 2026",
+  //   image: "./assets/home/berita.jpg",
+  //   link: "#",
+  // },
+  // {
+  //   id: 6,
+  //   category: "Pengumuman",
+  //   title: "Jadwal Posyandu Bulan Maret 2026",
+  //   date: "15 Juli 2026",
+  //   image: "./assets/home/berita.jpg",
+  //   link: "#",
+  // },
+  // {
+  //   id: 7,
+  //   category: "Berita",
+  //   title: "Panen Raya Padi Bersama Kelompok Tani",
+  //   date: "10 Juli 2026",
+  //   image: "./assets/home/berita.jpg",
+  //   link: "#",
+  // },
 ];
 
 export default function Berita() {
@@ -152,7 +152,7 @@ export default function Berita() {
         )}
 
         {/* Side Popular */}
-        <div className="md:col-span-2 grid gap-4">
+        <div className="md:col-span-2 gap-4">
         {sidePosts.map((post) => (
             <a
             key={post.id}

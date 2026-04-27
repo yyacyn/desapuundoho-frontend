@@ -2,7 +2,7 @@ import { useLocation, useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
-import DOMPurify from "dompurify";
+//import DOMPurify from "dompurify";
 import { useNews } from "../context/NewsContext";
 
 export default function NewsDetailPage() {
@@ -47,7 +47,7 @@ export default function NewsDetailPage() {
   };
 
   const rawContent = currentPost?.content || ""; // Pastikan field 'content' ada di API Anda
-  const sanitizedContent = DOMPurify.sanitize(rawContent);
+  // const sanitizedContent = DOMPurify.sanitize(rawContent);
 
   if (loading && !currentPost) {
     return <div className="py-40 text-center">Memuat Berita...</div>;
