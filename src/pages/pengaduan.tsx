@@ -1,8 +1,10 @@
 "use client";
 
+
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 
 export default function PengaduanPage() {
   const [form, setForm] = useState({
@@ -17,12 +19,29 @@ export default function PengaduanPage() {
     rahasia: false,
   });
 
+  const [file, setFile] = useState<File | null>(null);
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm({
       ...form,
       [name]: type === "checkbox" ? checked : value,
     });
+  };
+
+  const handleFileChange = (e) => {
+  const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile) {
+      setFile(droppedFile);
+    }
   };
 
   const handleSubmit = (e) => {
@@ -94,14 +113,14 @@ export default function PengaduanPage() {
                 value={form.nama}
                 onChange={handleChange}
                 disabled={form.anonim}
-                className={`w-full border rounded-lg p-3 text-sm ${
+                className={`w-full border border-gray-300 rounded-lg p-3 text-sm ${
                     form.anonim ? "bg-gray-100 cursor-not-allowed" : ""
                 }`}
                 required={!form.anonim}
                 />
             )}
 
-            <label className="flex items-center gap-2 text-sm">
+            <label className="flex text-gray-500 items-center gap-2 text-sm">
             <input
                 type="checkbox"
                 name="anonim"
@@ -115,7 +134,7 @@ export default function PengaduanPage() {
                 });
                 }}
             />
-            Anonim
+            Apakah Anda ingin melaporkan secara anonim?
             </label>
 
           {/* JUDUL */}
@@ -125,7 +144,7 @@ export default function PengaduanPage() {
             placeholder="Judul laporan *"
             value={form.judul}
             onChange={handleChange}
-            className="w-full border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#298064]"
+            className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#298064]"
             required
           />
 
@@ -136,18 +155,18 @@ export default function PengaduanPage() {
             value={form.isi}
             onChange={handleChange}
             rows={5}
-            className="w-full border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#298064]"
+            className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#298064]"
             required
           />
 
           {/* TANGGAL & LOKASI */}
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-2 gap-4 ">
             <input
               type="date"
               name="tanggal"
               value={form.tanggal}
               onChange={handleChange}
-              className="border rounded-lg p-3 text-sm"
+              className="border border-gray-300 rounded-lg p-3 text-sm"
               required
             />
             <input
@@ -156,32 +175,79 @@ export default function PengaduanPage() {
               placeholder="Lokasi kejadian *"
               value={form.lokasi}
               onChange={handleChange}
-              className="border rounded-lg p-3 text-sm"
+              className="border border-gray-300 rounded-lg p-3 text-sm"
               required
             />
           </div>
 
           {/* KATEGORI */}
-          <select
-            name="kategori"
-            value={form.kategori}
-            onChange={handleChange}
-            className="w-full border rounded-lg p-3 text-sm"
+          <div className="relative">
+            <select
+              name="kategori"
+              value={form.kategori}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-lg px-3 py-3 pr-10 text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-[#298064]"
+            >
+              <option value="">Pilih Kategori Laporan</option>
+              <option value="infrastruktur">Infrastruktur</option>
+              <option value="kesehatan">Kesehatan</option>
+              <option value="pendidikan">Pendidikan</option>
+              <option value="sosial">Sosial</option>
+            </select>
+
+            {/* ICON */}
+            <ChevronDown
+              size={18}
+              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+            />
+          </div>
+
+
+
+          {/* UPLOAD FOTO */}
+          <div
+            onDrop={handleDrop}
+            onDragOver={(e) => e.preventDefault()}
+            className="w-full border-2 border-dashed border-gray-300 rounded-xl p-6 md:p-10 text-center cursor-pointer hover:border-[#298064] transition"
           >
-            <option value="">Pilih Kategori Laporan</option>
-            <option value="infrastruktur">Infrastruktur</option>
-            <option value="kesehatan">Kesehatan</option>
-            <option value="pendidikan">Pendidikan</option>
-            <option value="sosial">Sosial</option>
-          </select>
+            <label className="flex flex-col items-center justify-center cursor-pointer">
+              <div className="w-24 h-24 rounded-md flex items-center justify-center">
+                <img
+                  src="/assets/pengaduan/upload-file.png"
+                  alt="upload icon"
+                  className="w-full object-contain opacity-70"
+                />
+              </div>
+
+              <p className="text-sm md:text-base text-gray-600">
+                Drag and drop Foto disini
+              </p>
+              <p className="text-xs text-gray-400">
+                (Atau klik untuk memilih foto)
+              </p>
+
+              {file && (
+                <p className="text-xs text-green-600 mt-2">
+                  {file.name}
+                </p>
+              )}
+
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </label>
+          </div>
 
           {/* OPSI */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <button
               type="submit"
-              className="bg-[#298064] hover:bg-[#298064] text-white px-6 py-2 rounded-lg text-sm font-semibold"
+              className="bg-[#298064] hover:bg-[#298064] text-white w-full py-3 rounded-lg text-sm font-semibold"
             >
-              KIRIM LAPORAN
+              Kirim Laporan
             </button>
           </div>
         </form>
