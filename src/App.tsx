@@ -15,6 +15,7 @@ import IDM from './pages/IDM'
 import { GalleryProvider } from "./context/GalleryContext";
 import { NewsProvider } from "./context/NewsContext";
 import { APBDesProvider } from './context/APBDesaContext'
+import AccessibilityWidget from "./components/AccessibilityWidget";
 
 function App() {
   const location = useLocation()
@@ -63,6 +64,7 @@ function App() {
           </APBDesProvider>
         </NewsProvider>
       </GalleryProvider>
+      <AccessibilityWidget />
     </div>
   )
 }
