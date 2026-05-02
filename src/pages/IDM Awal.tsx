@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { Download } from "lucide-react"
 import Navbar from "../components/navbar"
 import Footer from "../components/footer"
-import API_CONFIG from "../config/api"
 
 interface IdmMetricCard {
   label: string
@@ -14,27 +13,6 @@ interface IdmYearScore {
   score: number
 }
 
-interface IdmSummary {
-  STATUS?: string
-  SKOR_SAAT_INI?: string | number
-  TARGET_STATUS?: string
-  SKOR_MINIMAL?: string | number
-  PENAMBAHAN?: string | number
-}
-
-interface IdmRow {
-  INDIKATOR?: string
-  SKOR?: string | number
-}
-
-interface IdmApiResponse {
-  error?: string
-  mapData?: {
-    SUMMARIES?: IdmSummary
-    ROW?: IdmRow[]
-  }
-}
-
 interface ChartPoint {
   x: number
   y: number
@@ -42,12 +20,23 @@ interface ChartPoint {
   score: number
 }
 
-const IDM_YEARS = [2025, 2024, 2023, 2022, 2021, 2020]
+const yearlyScores: IdmYearScore[] = [
+  { year: 2021, score: 0.4152 },
+  { year: 2022, score: 0.4318 },
+  { year: 2023, score: 0.4784 },
+  { year: 2024, score: 0.5361 },
+  { year: 2025, score: 0.6073 },
+  { year: 2026, score: 0.6998 },
+]
 
-const buildApiUrl = (endpoint: string): string =>
-  API_CONFIG.BASE_URL.includes("api.php")
-    ? `${API_CONFIG.BASE_URL}?path=${endpoint}`
-    : `${API_CONFIG.BASE_URL}/${endpoint}`
+const summaryCards: IdmMetricCard[] = [
+  { label: "Target Status", value: "Berkembang" },
+  { label: "Skor Minimal", value: "0.7073" },
+  { label: "Penambahan", value: "0.0075" },
+  { label: "Skor IKS", value: "0.7829" },
+  { label: "Skor IKE", value: "0.7167" },
+  { label: "Skor IKL", value: "0.6000" },
+]
 
 const GRID_TICKS: number[] = Array.from({ length: 11 }, (_, index) => index / 10)
 
@@ -55,7 +44,7 @@ function formatScore(value: number): string {
   return value.toFixed(4)
 }
 
-function IdmTrendChart({ yearlyScores }: { yearlyScores: IdmYearScore[] }) {
+function IdmTrendChart() {
   const [hoveredYear, setHoveredYear] = useState<number | null>(null)
 
   const chartConfig = {
@@ -103,7 +92,7 @@ function IdmTrendChart({ yearlyScores }: { yearlyScores: IdmYearScore[] }) {
             const y =
               chartConfig.marginTop +
               (1 - tick) *
-              (chartConfig.height - chartConfig.marginTop - chartConfig.marginBottom)
+                (chartConfig.height - chartConfig.marginTop - chartConfig.marginBottom)
 
             return (
               <g key={`grid-${tick}`}>
@@ -228,128 +217,24 @@ function MetricCard({ label, value }: IdmMetricCard) {
 }
 
 export default function IDM() {
-  const [idmYear, setIdmYear] = useState<number>(2024)
-  const [idmData, setIdmData] = useState<IdmApiResponse | null>(null)
-  const [yearlyScores, setYearlyScores] = useState<IdmYearScore[]>([])
-  const [loading, setLoading] = useState(true)
-  const [loadingTrend, setLoadingTrend] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const fetchIdmByYear = async () => {
-      setLoading(true)
-      setError(null)
-
-      try {
-        const res = await fetch(buildApiUrl(`idm?tahun=${idmYear}`))
-        if (!res.ok) {
-          throw new Error(`Gagal mengambil data IDM tahun ${idmYear}`)
-        }
-
-        const json = (await res.json()) as IdmApiResponse
-        if (json.error || !json.mapData || Object.keys(json.mapData).length === 0) {
-          setIdmData(null)
-          setError(`Data IDM untuk tahun ${idmYear} belum tersedia atau tidak dirilis.`)
-        } else {
-          setIdmData(json)
-        }
-      } catch (err) {
-        console.error(err)
-        setIdmData(null)
-        setError("Gagal terhubung ke server untuk IDM.")
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchIdmByYear()
-  }, [idmYear])
-
-  useEffect(() => {
-    const fetchTrend = async () => {
-      setLoadingTrend(true)
-      try {
-        const results = await Promise.all(
-          IDM_YEARS.map(async (year) => {
-            const res = await fetch(buildApiUrl(`idm?tahun=${year}`))
-            if (!res.ok) return null
-            const json = (await res.json()) as IdmApiResponse
-            const value = Number(json?.mapData?.SUMMARIES?.SKOR_SAAT_INI || 0)
-            if (!value) return null
-            return { year, score: value }
-          })
-        )
-
-        const valid = results
-          .filter((item): item is IdmYearScore => item !== null)
-          .sort((a, b) => a.year - b.year)
-
-        setYearlyScores(valid)
-      } catch (err) {
-        console.error(err)
-        setYearlyScores([])
-      } finally {
-        setLoadingTrend(false)
-      }
-    }
-
-    fetchTrend()
-  }, [])
-
-  const summaries = idmData?.mapData?.SUMMARIES || {}
-  const rows = idmData?.mapData?.ROW || []
-
-  const IKS = Number(rows.find((r) => r.INDIKATOR?.includes("IKS"))?.SKOR || 0)
-  const IKE = Number(rows.find((r) => r.INDIKATOR?.includes("IKE"))?.SKOR || 0)
-  const IKL = Number(rows.find((r) => r.INDIKATOR?.includes("IKL"))?.SKOR || 0)
-
-  const summaryCards: IdmMetricCard[] = [
-    { label: "Target Status", value: summaries.TARGET_STATUS ? String(summaries.TARGET_STATUS) : "-" },
-    { label: "Skor Minimal", value: Number(summaries.SKOR_MINIMAL || 0).toFixed(4) },
-    { label: "Penambahan", value: Number(summaries.PENAMBAHAN || 0).toFixed(4) },
-    { label: "Skor IKS", value: IKS.toFixed(4) },
-    { label: "Skor IKE", value: IKE.toFixed(4) },
-    { label: "Skor IKL", value: IKL.toFixed(4) },
-  ]
-
-  const currentStatus = summaries.STATUS ? String(summaries.STATUS) : "-"
-  const currentScore = Number(summaries.SKOR_SAAT_INI || 0)
-
   return (
     <>
       <Navbar />
 
       <section className="w-full bg-[#f2f2f2] pt-24 pb-14 px-4 md:px-10 xl:px-16">
         <div className="mx-auto w-full max-w-7xl">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <h1 className="text-4xl font-bold text-[#298064] md:text-5xl">IDM Puundoho</h1>
-            <div className="flex items-center gap-3">
-              <label htmlFor="idm-year" className="text-sm font-semibold text-gray-700">Tahun Data</label>
-              <select
-                id="idm-year"
-                className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#298064]"
-                value={idmYear}
-                onChange={(e) => setIdmYear(Number(e.target.value))}
-              >
-                {IDM_YEARS.map((year) => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
-            </div>
-          </div>
+          <h1 className="text-4xl font-bold text-[#298064] md:text-5xl">IDM Puundoho</h1>
           <p className="mt-2 max-w-3xl text-base leading-relaxed text-black md:text-lg">
             Indeks Desa Membangun (IDM) merupakan indeks komposit yang dibentuk dari tiga indeks, yaitu Indeks Ketahanan Sosial,
             Indeks Ketahanan Ekonomi, dan Indeks Ketahanan Ekologi/Lingkungan.
           </p>
 
-          {error && <p className="mt-3 text-sm font-medium text-red-600">{error}</p>}
-
           <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-2">
             <div className="grid grid-cols-1 gap-4">
-              <MainInfoCard label={`SKOR IDM ${idmYear}`} value={loading ? "..." : currentScore.toFixed(4)} />
+              <MainInfoCard label="SKOR IDM 2026" value="0.6998" />
               <div className="rounded-2xl border border-gray-300 bg-[#f8f8f8] shadow-[0_0_15px_rgba(0,0,0,0.08)] px-6 py-4">
-                <p className="text-sm font-semibold text-black md:text-base">STATUS IDM {idmYear}</p>
-                <p className="mt-4 text-center text-4xl font-bold text-[#298064]">{loading ? "..." : currentStatus}</p>
+                <p className="text-sm font-semibold text-black md:text-base">STATUS IDM 2026</p>
+                <p className="mt-4 text-center text-4xl font-bold text-[#298064]">Berkembang</p>
               </div>
             </div>
 
@@ -382,13 +267,7 @@ export default function IDM() {
           <div className="mt-14">
             <h2 className="text-4xl font-bold text-[#298064]">Skor IDM tahun ke tahun</h2>
             <div className="mt-3">
-              {loadingTrend ? (
-                <div className="rounded-2xl border border-gray-300 bg-[#f8f8f8] p-6 text-sm font-medium text-gray-600">Memuat trend IDM...</div>
-              ) : yearlyScores.length === 0 ? (
-                <div className="rounded-2xl border border-gray-300 bg-[#f8f8f8] p-6 text-sm font-medium text-gray-600">Data trend IDM belum tersedia.</div>
-              ) : (
-                <IdmTrendChart yearlyScores={yearlyScores} />
-              )}
+              <IdmTrendChart />
             </div>
           </div>
         </div>

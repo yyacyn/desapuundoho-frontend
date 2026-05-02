@@ -124,7 +124,7 @@ export default function Navbar() {
                     }
                   >
                     Penduduk
-                  </Link>
+                  </NavLink>
                 </li>
                 <li>
                   <NavLink

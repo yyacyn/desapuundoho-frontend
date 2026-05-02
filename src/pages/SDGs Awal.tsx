@@ -1,7 +1,5 @@
-import { useEffect, useMemo, useState } from "react"
 import Navbar from "../components/navbar"
 import Footer from "../components/footer"
-import API_CONFIG from "../config/api"
 
 interface SdgsItem {
   id: number
@@ -10,90 +8,28 @@ interface SdgsItem {
   colorClass: string
 }
 
-interface SdgApiItem {
-  goals: number
-  title: string
-  score: number
-  image?: string
-}
-
-interface SdgApiResponse {
-  average?: number
-  data?: SdgApiItem[]
-}
-
-const getGoalColorClass = (goal: number): string => {
-  const colorMap: Record<number, string> = {
-    1: "text-red-500 bg-red-500",
-    2: "text-amber-500 bg-amber-500",
-    3: "text-green-600 bg-green-600",
-    4: "text-rose-600 bg-rose-600",
-    5: "text-red-500 bg-red-500",
-    6: "text-sky-500 bg-sky-500",
-    7: "text-yellow-500 bg-yellow-500",
-    8: "text-rose-800 bg-rose-800",
-    9: "text-orange-500 bg-orange-500",
-    10: "text-pink-600 bg-pink-600",
-    11: "text-amber-500 bg-amber-500",
-    12: "text-yellow-700 bg-yellow-700",
-    13: "text-green-700 bg-green-700",
-    14: "text-blue-600 bg-blue-600",
-    15: "text-green-600 bg-green-600",
-    16: "text-blue-800 bg-blue-800",
-    17: "text-indigo-800 bg-indigo-800",
-    18: "text-teal-600 bg-teal-600",
-  }
-
-  return colorMap[goal] || "text-[#298064] bg-[#298064]"
-}
-
-const buildApiUrl = (endpoint: string): string =>
-  API_CONFIG.BASE_URL.includes("api.php")
-    ? `${API_CONFIG.BASE_URL}?path=${endpoint}`
-    : `${API_CONFIG.BASE_URL}/${endpoint}`
+const sdgsItems: SdgsItem[] = [
+  { id: 1, title: "Desa tanpa kemiskinan", value: "28.96", colorClass: "text-red-500 bg-red-500" },
+  { id: 2, title: "Desa tanpa Kelaparan", value: "34.15", colorClass: "text-amber-500 bg-amber-500" },
+  { id: 3, title: "Desa sehat dan sejahtera", value: "73.51", colorClass: "text-green-600 bg-green-600" },
+  { id: 4, title: "Pendidikan Desa Berkualitas", value: "37.28", colorClass: "text-rose-600 bg-rose-600" },
+  { id: 5, title: "Keterlibatan Perempuan Desa", value: "35.96", colorClass: "text-red-500 bg-red-500" },
+  { id: 6, title: "Desa Layak Air bersih dan sanitasi", value: "60.29", colorClass: "text-sky-500 bg-sky-500" },
+  { id: 7, title: "Desa Berenergi Bersih dan Terbarukan", value: "98.7", colorClass: "text-yellow-500 bg-yellow-500" },
+  { id: 8, title: "Pertumbuhan Ekonomi Desa Merata", value: "46.48", colorClass: "text-rose-800 bg-rose-800" },
+  { id: 9, title: "Infrastruktur dan Inovasi Desa Sesuai Kebutuhan", value: "13.38", colorClass: "text-orange-500 bg-orange-500" },
+  { id: 10, title: "Desa Tanpa Kesenjangan", value: "32.68", colorClass: "text-pink-600 bg-pink-600" },
+  { id: 11, title: "Kawasan Pemukiman Desa Aman dan Nyaman", value: "48.18", colorClass: "text-amber-500 bg-amber-500" },
+  { id: 12, title: "Konsumsi dan Produksi Desa Sadar Lingkungan", value: "0", colorClass: "text-yellow-700 bg-yellow-700" },
+  { id: 13, title: "Desa Tanggap Perubahan Iklim", value: "0", colorClass: "text-green-700 bg-green-700" },
+  { id: 14, title: "Desa Peduli Lingkungan Laut", value: "50", colorClass: "text-blue-600 bg-blue-600" },
+  { id: 15, title: "Desa Peduli Lingkungan Darat", value: "0.3", colorClass: "text-green-600 bg-green-600" },
+  { id: 16, title: "Desa Damai Berkeadilan", value: "73.24", colorClass: "text-blue-800 bg-blue-800" },
+  { id: 17, title: "Kemitraan untuk pembangunan desa", value: "60", colorClass: "text-indigo-800 bg-indigo-800" },
+  { id: 18, title: "Kelembagaan Desa Dinamis dan Budaya Desa Adaptif", value: "71.9", colorClass: "text-teal-600 bg-teal-600" },
+]
 
 export default function SDGs() {
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [sdgResponse, setSdgResponse] = useState<SdgApiResponse | null>(null)
-
-  useEffect(() => {
-    const fetchSdg = async () => {
-      setLoading(true)
-      setError(null)
-
-      try {
-        const res = await fetch(buildApiUrl("sdgs"))
-        if (!res.ok) {
-          throw new Error("Gagal mengambil data SDGs")
-        }
-
-        const json = (await res.json()) as SdgApiResponse
-        setSdgResponse(json)
-      } catch (err) {
-        console.error(err)
-        setError("Gagal terhubung ke server untuk SDGs.")
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchSdg()
-  }, [])
-
-  const sdgsItems: SdgsItem[] = useMemo(() => {
-    const list = sdgResponse?.data || []
-
-    return list.map((item) => ({
-      id: item.goals,
-      title: item.title,
-      value: Number(item.score || 0).toFixed(2),
-      colorClass: getGoalColorClass(item.goals),
-    }))
-  }, [sdgResponse])
-
-  const averageScore = useMemo(() => Number(sdgResponse?.average || 0).toFixed(2), [sdgResponse])
-
   return (
     <>
       <Navbar />
@@ -123,7 +59,7 @@ export default function SDGs() {
             <div className="bg-white rounded-xl shadow-[0_0_15px_rgba(0,0,0,0.1)] p-5 md:p-6 max-w-xl">
               <div className="flex items-center justify-between gap-4">
                 <p className="text-2xl md:text-3xl font-medium text-[#298064] leading-tight">Skor SDGs Desa Puundaho</p>
-                <p className="text-4xl md:text-5xl font-bold text-[#298064] leading-none">{loading ? "..." : averageScore}</p>
+                <p className="text-4xl md:text-5xl font-bold text-[#298064] leading-none">42.50</p>
               </div>
             </div>
           </div>
@@ -141,41 +77,38 @@ export default function SDGs() {
           <h2 className="text-3xl md:text-4xl font-bold text-[#298064]">Detail SDGs</h2>
         </div>
 
-        {error && <p className="mb-6 text-red-600 font-medium">{error}</p>}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+          {sdgsItems.map((item, index) => {
+            const isSeventeenth = index === 16
+            const isEighteenth = index === 17
 
-        {!loading && !error && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
-            {sdgsItems.map((item, index) => {
-              const isSeventeenth = index === 16
-              const isEighteenth = index === 17
+            return (
+              <article
+                key={item.id}
+                className={`bg-white rounded-2xl border border-gray-200 shadow-[0_0_10px_rgba(0,0,0,0.08)] p-4 min-h-[130px] flex flex-col justify-between ${
+                  isSeventeenth ? "xl:col-start-2" : ""
+                } ${isEighteenth ? "xl:col-start-3" : ""}`}
+              >
+                <h3 className="text-xl font-semibold text-gray-900 leading-snug line-clamp-2">{item.title}</h3>
 
-              return (
-                <article
-                  key={item.id}
-                  className={`bg-white rounded-2xl border border-gray-200 shadow-[0_0_10px_rgba(0,0,0,0.08)] p-4 min-h-[130px] flex flex-col justify-between ${isSeventeenth ? "xl:col-start-2" : ""
-                    } ${isEighteenth ? "xl:col-start-3" : ""}`}
-                >
-                  <h3 className="text-xl font-semibold text-gray-900 leading-snug line-clamp-2">{item.title}</h3>
-
-                  <div className="flex items-end justify-between gap-4 mt-4">
-                    <div className="w-12 h-12 rounded-sm overflow-hidden flex items-center justify-center">
-                      <img
-                        src={`/assets/sgds/sgds${item.id}.png`}
-                        alt={`Logo SDGs ${item.id}`}
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
-
-                    <div className="text-right">
-                      <p className="text-sm text-gray-700 leading-none mb-1">Nilai</p>
-                      <p className={`text-4xl font-bold leading-none ${item.colorClass.split(" ")[0]}`}>{item.value}</p>
-                    </div>
+                <div className="flex items-end justify-between gap-4 mt-4">
+                  <div className="w-12 h-12 rounded-sm overflow-hidden flex items-center justify-center">
+                    <img
+                      src={`/assets/sgds/sgds${item.id}.png`}
+                      alt={`Logo SDGs ${item.id}`}
+                      className="w-full h-full object-contain"
+                    />
                   </div>
-                </article>
-              )
-            })}
-          </div>
-        )}
+
+                  <div className="text-right">
+                    <p className="text-sm text-gray-700 leading-none mb-1">Nilai</p>
+                    <p className={`text-4xl font-bold leading-none ${item.colorClass.split(" ")[0]}`}>{item.value}</p>
+                  </div>
+                </div>
+              </article>
+            )
+          })}
+        </div>
       </section>
 
       <Footer siteSettings={undefined} />

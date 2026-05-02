@@ -10,6 +10,9 @@ import Stunting from './pages/Stunting'
 import Bansos from './pages/Bansos'
 import SDGs from './pages/SDGs'
 import IDM from './pages/IDM'
+import Belanja from './pages/Belanja'
+import DetailBelanja from './pages/DetailBelanja'
+import Penduduk from './pages/Penduduk'
 import { GalleryProvider } from "./context/GalleryContext";
 import { NewsProvider } from "./context/NewsContext";
 import { APBDesProvider } from './context/APBDesaContext'
@@ -33,7 +36,9 @@ function App() {
               <Route path="/galeri" element={<Galeri />} />
               <Route path="/profil" element={<Profil />} />
               <Route path="/idm" element={<IDM />} />
-
+              <Route path="/penduduk" element={<Penduduk />} />
+              <Route path="/belanja" element={<Belanja />} />
+              <Route path="/detail-belanja/:productId" element={<DetailBelanja />} />
               {/* Infografis Group */}
               <Route path="/infografis/apbdesa" element={<APBDesa />} />
               <Route path="/infografis/stunting" element={<Stunting />} />
