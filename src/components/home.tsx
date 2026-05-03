@@ -99,7 +99,7 @@ export function TentangKami() {
             ))}
           </div>
 
-          <Link to="/profil" className="mt-8 flex items-center gap-3 bg-[#298064] text-white px-6 py-3 rounded-full hover:bg-emerald-800 transition-all group shadow-md">
+          <Link to="/profil" className="mt-8 inline-flex items-center gap-3 bg-[#298064] text-white px-6 py-3 rounded-full hover:bg-emerald-800 transition-all group shadow-md">
             Lihat Selengkapnya
 
             <span className="flex items-center justify-center w-8 h-8 bg-white rounded-full transition-all group-hover:translate-x-1">
@@ -285,7 +285,7 @@ export function APBDesa() {
             </div>
           </div>
 
-          <Link to="/infografis/apbdesa" className="flex items-center gap-3 bg-[#2D7A5F] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#235d49] transition-colors group">
+          <Link to="/infografis/apbdesa"className="inline-flex items-center gap-3 bg-[#2D7A5F] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#235d49] transition-colors group">
             Lihat Selengkapnya
             <span className="bg-white text-[#2D7A5F] rounded-full p-1 group-hover:translate-x-1 transition-transform">
               <ArrowRight size={18} />
@@ -448,7 +448,7 @@ export const BeritaSection = () => {
 
         {/* Button */}
         <div className="flex justify-center mt-12 pb-16">
-          <Link to="/berita" className="flex items-center gap-3 bg-[#2D7A5F] text-white px-8 py-3 rounded-2xl font-bold hover:bg-[#235d49] transition shadow-lg group">
+          <Link to="/berita" className="inline-flex items-center gap-3 bg-[#2D7A5F] text-white px-8 py-3 rounded-2xl font-bold hover:bg-[#235d49] transition shadow-lg group">
             Lihat Selengkapnya
             <span className="bg-white text-[#2D7A5F] rounded-full p-1 group-hover:translate-x-1 transition-transform">
               <ChevronRight size={20} />

@@ -209,7 +209,7 @@ export default function Berita() {
               )}
 
               {/* Side Popular */}
-              <div className="md:col-span-2 grid gap-4">
+              <div className="md:col-span-2 gap-4">
                 {sidePosts.map((post) => (
                   <a
                     key={post.id}

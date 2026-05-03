@@ -1,4 +1,6 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8081/api'
+// const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8081/api'
+const API_BASE = 'http://localhost:8081/api'
+const IMAGEKIT_PUBLIC_KEY = 'public_oaXjLRSYC16BGPDCCi3lpc5Fd64='
 
 /**
  * Authenticated fetch wrapper.
@@ -49,10 +51,53 @@ export async function login(username, password) {
 }
 
 /**
- * Get ImageKit authentication parameters (server-signed)
+ * Get ImageKit auth token for client-side upload
  */
 export async function getImageKitAuth() {
-    const res = await apiFetch('/imagekit/auth')
-    if (!res.ok) throw new Error('Failed to get ImageKit auth')
-    return res.json()
+    const res = await fetch(`${API_BASE}/imagekit/auth`)
+
+    if (!res.ok) {
+        let message = 'Gagal mengambil token ImageKit'
+        try {
+            const data = await res.json()
+            message = data.error || message
+        } catch {
+            // ignore JSON parse failure
+        }
+        throw new Error(message)
+    }
+
+    return await res.json()
+}
+
+/**
+ * Upload file to ImageKit using client-side signed upload
+ */
+export async function uploadToImageKit(file) {
+    try {
+        const auth = await getImageKitAuth()
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('publicKey', IMAGEKIT_PUBLIC_KEY)
+        formData.append('signature', auth.signature)
+        formData.append('expire', auth.expire)
+        formData.append('token', auth.token)
+        formData.append('fileName', file.name)
+        formData.append('folder', '/pengaduan')
+
+        const response = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
+            method: 'POST',
+            body: formData,
+        })
+
+        if (!response.ok) {
+            throw new Error('Upload gagal')
+        }
+
+        const result = await response.json()
+        return result.url
+    } catch (error) {
+        console.error('ImageKit upload error:', error)
+        throw error
+    }
 }
