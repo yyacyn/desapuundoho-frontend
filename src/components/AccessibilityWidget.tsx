@@ -14,18 +14,11 @@ import {
   Ban,
   X,
 } from "lucide-react";
+import { useAccessibility } from "../context/AccessibilityContext";
 
 export default function AccessibilityWidget() {
   const [open, setOpen] = useState(false);
-  const [activeFeatures, setActiveFeatures] = useState<string[]>([]);
-
-  const toggleFeature = (label) => {
-    setActiveFeatures((prev) =>
-      prev.includes(label)
-        ? prev.filter((item) => item !== label)
-        : [...prev, label]
-    );
-  };
+  const { activeFeatures, toggleFeature, resetAll } = useAccessibility();
 
   const features = [
     { icon: <ZoomIn />, label: "Perbesar Teks" },
@@ -59,10 +52,10 @@ export default function AccessibilityWidget() {
       {/* OVERLAY */}
       {open && (
         <div className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-          
+
           {/* MODAL */}
           <div className="w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden animate-fadeIn">
-            
+
             {/* HEADER */}
             <div className="flex justify-between items-center px-6 py-4 border-b">
               <div>
@@ -89,19 +82,17 @@ export default function AccessibilityWidget() {
                     key={i}
                     onClick={() => toggleFeature(item.label)}
                     className={`flex flex-col items-center justify-center gap-3 p-4 rounded-xl border transition-all duration-200 group
-                      ${
-                        isActive
-                          ? "bg-[#298064] text-white border-[#298064] shadow-lg scale-[1.05]"
-                          : "bg-white hover:shadow-md hover:border-[#298064]"
+                      ${isActive
+                        ? "bg-[#298064] text-white border-[#298064] shadow-lg scale-[1.05]"
+                        : "bg-white hover:shadow-md hover:border-[#298064]"
                       }
                     `}
                   >
                     <div
-                      className={`transition ${
-                        isActive
+                      className={`transition ${isActive
                           ? "text-white scale-110"
                           : "text-[#298064] group-hover:scale-110"
-                      }`}
+                        }`}
                     >
                       {item.icon}
                     </div>
@@ -121,7 +112,7 @@ export default function AccessibilityWidget() {
               </p>
 
               <button
-                onClick={() => setActiveFeatures([])}
+                onClick={() => resetAll()}
                 className="bg-[#298064] text-white px-4 py-2 rounded-lg text-sm hover:bg-[#1f5f4c] transition"
               >
                 Reset Semua
