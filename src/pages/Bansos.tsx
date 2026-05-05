@@ -66,7 +66,7 @@ export default function Bansos() {
     <>
       <Navbar />
 
-      <section className="bg-white py-12 px-4 md:px-28 w-full mx-auto pt-20">
+      <section className="bg-white py-12 px-4 md:px-28 w-full mx-auto pt-20 md:pt-30">
         <div className="mb-6">
           <div className="h-1 w-24 bg-[#298064] mb-3" />
           <h1 className="text-3xl md:text-4xl font-bold text-[#298064]">Cek Penerima Bansos</h1>

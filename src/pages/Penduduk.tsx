@@ -246,7 +246,7 @@ export default function Penduduk() {
     <>
       <Navbar />
 
-      <section className="w-full bg-[#f2f2f2] px-4 pb-16 pt-28 md:px-8 lg:px-10">
+      <section className="w-full bg-[#f2f2f2] px-4 pb-16 pt-28 md:pt-30 md:px-8 lg:px-10">
         <div className="mx-auto w-full max-w-7xl space-y-14">
           <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1.2fr_minmax(0,1fr)] lg:gap-12">
             <div className="pr-0 lg:pr-6">

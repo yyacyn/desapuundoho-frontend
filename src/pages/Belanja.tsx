@@ -105,7 +105,7 @@ export default function Belanja() {
     <>
       <Navbar />
 
-      <section className="w-full bg-[#f2f2f2] px-4 pb-16 pt-24 md:px-8 lg:px-10">
+      <section className="w-full bg-[#f2f2f2] px-4 pb-16 pt-24 md:pt-30 md:px-8 lg:px-10">
         <div className="mx-auto w-full max-w-7xl">
           <div className="relative">
             <label htmlFor="search-product" className="sr-only">

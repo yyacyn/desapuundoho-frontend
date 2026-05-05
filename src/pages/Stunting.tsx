@@ -65,7 +65,7 @@ export default function Stunting() {
     <>
       <Navbar />
 
-      <section className="bg-white py-12 px-4 md:px-28 w-full mx-auto pt-20">
+      <section className="bg-white py-12 px-4 md:px-28 w-full mx-auto pt-20 md:pt-30">
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-[#298064]">Data Stunting</h1>
         </div>
@@ -159,6 +159,10 @@ export default function Stunting() {
         <div className="space-y-4 mb-8">
           {bansosAccordionData.map((item) => {
             const isOpen = openAccordionId === item.id
+            const headerPercentage = Math.min(
+              100,
+              Math.max(0, Math.round(item.details.reduce((sum, detail) => sum + detail.percentage, 0)))
+            )
 
             return (
               <div key={item.id} className="bg-white rounded-xl shadow-[0_0_15px_rgba(0,0,0,0.1)] overflow-hidden">
@@ -174,7 +178,19 @@ export default function Stunting() {
                     <p className="text-base md:text-lg text-gray-800 leading-snug">{item.title}</p>
                   </div>
 
-                  <div className="flex-1" aria-hidden="true" />
+                  <div className="flex-1 flex md:justify-center" aria-hidden="true">
+                    <div className="flex items-center gap-2 w-full md:justify-end">
+                      <div className="flex-1 min-w-0">
+                        <div className="w-full min-w-[180px] md:min-w-[240px] lg:min-w-[320px] max-w-[260px] md:max-w-[320px] lg:max-w-[420px] bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                        <div
+                          className="h-2.5 bg-emerald-600 rounded-full transition-all duration-500"
+                          style={{ width: `${headerPercentage}%` }}
+                        />
+                        </div>
+                      </div>
+                      <span className="text-xs font-semibold text-gray-700 w-10 text-right">{headerPercentage}%</span>
+                    </div>
+                  </div>
 
                   <div className="md:w-40 flex items-center justify-end gap-2 md:gap-2.5">
                     <span className="text-lg md:text-xl text-gray-900 leading-none">{item.total}</span>

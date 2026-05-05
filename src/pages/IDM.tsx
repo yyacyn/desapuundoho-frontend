@@ -221,7 +221,7 @@ export default function IDM() {
     <>
       <Navbar />
 
-      <section className="w-full bg-[#f2f2f2] pt-24 pb-14 px-4 md:px-10 xl:px-16">
+      <section className="w-full bg-[#f2f2f2] pt-24 md:pt-30 pb-14 px-4 md:px-10 xl:px-16">
         <div className="mx-auto w-full max-w-7xl">
           <h1 className="text-4xl font-bold text-[#298064] md:text-5xl">IDM Puundoho</h1>
           <p className="mt-2 max-w-3xl text-base leading-relaxed text-black md:text-lg">

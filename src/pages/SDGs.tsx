@@ -34,17 +34,17 @@ export default function SDGs() {
     <>
       <Navbar />
 
-      <section className="bg-white py-12 px-4 md:px-28 w-full mx-auto pt-20">
+      <section className="bg-white py-12 px-4 md:px-28 w-full mx-auto pt-20 md:pt-30">
         <div className="flex justify-center mb-8 md:mb-10">
           <img
             src="/assets/sgds/sgds illust.png"
             alt="Ilustrasi SDGs"
-            className="w-full max-w-4xl h-auto object-contain"
+            className="mx-auto h-auto object-contain max-w-xl md:max-w-2xl"
           />
         </div>
 
-        <div className="mb-6">
-          <h1 className="text-3xl md:text-4xl font-bold text-[#298064]">SDGs Desa Puundaho</h1>
+        <div className="mb-2">
+          <h1 className="text-3xl md:text-4xl font-bold text-[#298064]">SDGs Desa Puundoho</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10 mb-10 items-center">
@@ -68,7 +68,7 @@ export default function SDGs() {
             <img
               src="/assets/sgds/stats illust.png"
               alt="Ilustrasi Statistik SDGs"
-              className="w-full max-w-sm md:max-w-md h-auto object-contain"
+              className="mx-auto w-auto h-auto object-contain max-w-[260px] md:max-w-[340px] lg:max-w-[420px] max-h-[180px] md:max-h-[240px] lg:max-h-[280px]"
             />
           </div>
         </div>
@@ -85,9 +85,7 @@ export default function SDGs() {
             return (
               <article
                 key={item.id}
-                className={`bg-white rounded-2xl border border-gray-200 shadow-[0_0_10px_rgba(0,0,0,0.08)] p-4 min-h-[130px] flex flex-col justify-between ${
-                  isSeventeenth ? "xl:col-start-2" : ""
-                } ${isEighteenth ? "xl:col-start-3" : ""}`}
+                className={`bg-white rounded-2xl border border-gray-200 shadow-[0_0_10px_rgba(0,0,0,0.08)] p-4 min-h-[130px] flex flex-col justify-between ${isSeventeenth ? "xl:col-start-2" : ""} ${isEighteenth ? "xl:col-start-3" : ""}`}
               >
                 <h3 className="text-xl font-semibold text-gray-900 leading-snug line-clamp-2">{item.title}</h3>
 
