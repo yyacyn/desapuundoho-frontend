@@ -7,6 +7,25 @@ import { ChevronDown } from "lucide-react";
 import { RiFileTextLine } from "react-icons/ri";
 import { apiFetch, uploadToImageKit } from "../api";
 
+const MAX_LENGTHS = {
+  nama: 255,
+  nomor_telp: 20,
+  email: 100,
+  judul: 255,
+  isi: 10000,
+  lokasi: 255,
+  kategori: 100,
+}
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024
+const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf']
+const ALLOWED_FILE_EXTS = ['.jpg', '.jpeg', '.png', '.webp', '.pdf']
+
+const getFileExtension = (fileName: string) => {
+  const dotIndex = fileName.lastIndexOf('.')
+  return dotIndex >= 0 ? fileName.slice(dotIndex).toLowerCase() : ''
+}
+
 export default function PengaduanPage() {
   const [form, setForm] = useState({
     jenis: "pengaduan",
@@ -24,7 +43,8 @@ export default function PengaduanPage() {
 
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const isImageFile = !!file?.type.startsWith("image/");
@@ -32,7 +52,7 @@ export default function PengaduanPage() {
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const target = e.target;
     const { name, value } = target;
-    let newErrors = { ...errors };
+    let newErrors = { ...formErrors };
 
     if (name === "nomor_telp") {
       if (value && !/^\d+$/.test(value)) {
@@ -52,12 +72,13 @@ export default function PengaduanPage() {
       }
     }
 
-    setErrors(newErrors);
+    setFormErrors(newErrors);
     if (target instanceof HTMLInputElement && target.type === "checkbox") {
       setForm({
         ...form,
         [name]: target.checked,
       });
+      setError("");
       return;
     }
 
@@ -70,7 +91,36 @@ export default function PengaduanPage() {
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
+      const fileTypeValid = ALLOWED_FILE_TYPES.includes(selectedFile.type)
+      const fileExtValid = ALLOWED_FILE_EXTS.includes(getFileExtension(selectedFile.name))
+
+      if (!fileTypeValid && !fileExtValid) {
+        setFormErrors((prev) => ({
+          ...prev,
+          file: 'File harus bertipe JPG, JPEG, PNG, WebP, atau PDF.',
+        }))
+        setError('File harus bertipe JPG, JPEG, PNG, WebP, atau PDF.')
+        e.target.value = ''
+        return
+      }
+
+      if (selectedFile.size > MAX_FILE_SIZE) {
+        setFormErrors((prev) => ({
+          ...prev,
+          file: 'Ukuran file maksimal 5MB.',
+        }))
+        setError('Ukuran file maksimal 5MB.')
+        e.target.value = ''
+        return
+      }
+
       setFile(selectedFile);
+      setFormErrors((prev) => {
+        const nextErrors = { ...prev }
+        delete nextErrors.file
+        return nextErrors
+      })
+      setError('')
       const isImage = selectedFile.type.startsWith("image/");
       if (isImage) {
         const reader = new FileReader();
@@ -88,7 +138,34 @@ export default function PengaduanPage() {
     e.preventDefault();
     const droppedFile = e.dataTransfer.files?.[0];
     if (droppedFile) {
+      const fileTypeValid = ALLOWED_FILE_TYPES.includes(droppedFile.type)
+      const fileExtValid = ALLOWED_FILE_EXTS.includes(getFileExtension(droppedFile.name))
+
+      if (!fileTypeValid && !fileExtValid) {
+        setFormErrors((prev) => ({
+          ...prev,
+          file: 'File harus bertipe JPG, JPEG, PNG, WebP, atau PDF.',
+        }))
+        setError('File harus bertipe JPG, JPEG, PNG, WebP, atau PDF.')
+        return
+      }
+
+      if (droppedFile.size > MAX_FILE_SIZE) {
+        setFormErrors((prev) => ({
+          ...prev,
+          file: 'Ukuran file maksimal 5MB.',
+        }))
+        setError('Ukuran file maksimal 5MB.')
+        return
+      }
+
       setFile(droppedFile);
+      setFormErrors((prev) => {
+        const nextErrors = { ...prev }
+        delete nextErrors.file
+        return nextErrors
+      })
+      setError('')
       const isImage = droppedFile.type.startsWith("image/");
       if (isImage) {
         const reader = new FileReader();
@@ -102,30 +179,58 @@ export default function PengaduanPage() {
     }
   };
 
+  const validateForm = () => {
+    const nextErrors: Record<string, string> = {}
+
+    if (!form.anonim) {
+      if (!form.nama.trim()) nextErrors.nama = `Nama wajib diisi (1-${MAX_LENGTHS.nama} karakter).`
+      else if (form.nama.trim().length > MAX_LENGTHS.nama) nextErrors.nama = `Nama maksimal ${MAX_LENGTHS.nama} karakter.`
+
+      if (!form.nomor_telp.trim()) nextErrors.nomor_telp = 'Nomor telepon wajib diisi.'
+      else if (!/^\d+$/.test(form.nomor_telp)) nextErrors.nomor_telp = 'Nomor telepon hanya boleh berisi angka.'
+      else if (form.nomor_telp.trim().length < 10) nextErrors.nomor_telp = 'Nomor telepon minimal 10 digit.'
+
+      if (!form.email.trim()) nextErrors.email = 'Email wajib diisi.'
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = 'Email harus valid (contoh: nama@domain.com).'
+      else if (form.email.trim().length > MAX_LENGTHS.email) nextErrors.email = `Email maksimal ${MAX_LENGTHS.email} karakter.`
+    }
+
+    if (!form.judul.trim()) nextErrors.judul = `Judul wajib diisi (1-${MAX_LENGTHS.judul} karakter).`
+    else if (form.judul.trim().length > MAX_LENGTHS.judul) nextErrors.judul = `Judul maksimal ${MAX_LENGTHS.judul} karakter.`
+
+    if (!form.isi.trim()) nextErrors.isi = `Isi wajib diisi (1-${MAX_LENGTHS.isi} karakter).`
+    else if (form.isi.trim().length > MAX_LENGTHS.isi) nextErrors.isi = `Isi maksimal ${MAX_LENGTHS.isi} karakter.`
+
+    if (!form.tanggal) nextErrors.tanggal = 'Tanggal harus dipilih.'
+
+    if (!form.lokasi.trim()) nextErrors.lokasi = `Lokasi wajib diisi (1-${MAX_LENGTHS.lokasi} karakter).`
+    else if (form.lokasi.trim().length > MAX_LENGTHS.lokasi) nextErrors.lokasi = `Lokasi maksimal ${MAX_LENGTHS.lokasi} karakter.`
+
+    if (!file) {
+      nextErrors.file = 'File wajib diupload.'
+    } else {
+      const fileTypeValid = ALLOWED_FILE_TYPES.includes(file.type)
+      const fileExtValid = ALLOWED_FILE_EXTS.includes(getFileExtension(file.name))
+
+      if (!fileTypeValid && !fileExtValid) {
+        nextErrors.file = 'File harus bertipe JPG, JPEG, PNG, WebP, atau PDF.'
+      } else if (file.size > MAX_FILE_SIZE) {
+        nextErrors.file = 'Ukuran file maksimal 5MB.'
+      }
+    }
+
+    return nextErrors
+  }
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSuccessMessage("");
 
-    let newErrors: Record<string, string> = {};
-
-    if (!form.anonim) {
-      if (!form.nama.trim()) newErrors.nama = "Nama harus diisi";
-      if (!form.nomor_telp.trim()) newErrors.nomor_telp = "Nomor telepon harus diisi";
-      if (!form.email.trim()) newErrors.email = "Email harus diisi";
-      if (!/^\d+$/.test(form.nomor_telp)) newErrors.nomor_telp = "Nomor telepon hanya boleh berisi angka";
-      if (form.nomor_telp.length < 10) newErrors.nomor_telp = "Nomor telepon minimal 10 digit";
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = "Email tidak valid";
-    }
-
-    if (!form.judul.trim()) newErrors.judul = "Judul laporan harus diisi";
-    if (!form.isi.trim()) newErrors.isi = "Isi laporan harus diisi";
-    if (!form.tanggal) newErrors.tanggal = "Tanggal harus dipilih";
-    if (!form.lokasi.trim()) newErrors.lokasi = "Lokasi harus diisi";
-    if (!form.kategori) newErrors.kategori = "Kategori harus dipilih";
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
+    const nextErrors = validateForm()
+    if (Object.keys(nextErrors).length > 0) {
+      setFormErrors(nextErrors)
+      setError(nextErrors[Object.keys(nextErrors)[0]])
+      return
     }
 
     setIsSubmitting(true);
@@ -187,10 +292,11 @@ export default function PengaduanPage() {
       });
       setFile(null);
       setFilePreview(null);
-      setErrors({});
+      setFormErrors({});
+      setError("");
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Gagal mengirim laporan";
-      setErrors({ submit: message });
+      setError(message);
       window.alert(message);
     } finally {
       setIsSubmitting(false);
@@ -215,12 +321,24 @@ export default function PengaduanPage() {
         <div className="max-w-3xl mx-auto -mt-12 px-4">
           <form
             onSubmit={handleSubmit}
+            noValidate
             className="bg-white rounded-xl shadow-lg p-6 space-y-5"
           >
             <h2 className="bg-[#298064] text-white px-4 py-2 rounded-md font-semibold">
               Sampaikan Laporan Anda
             </h2>
 
+            {/* ERROR SUMMARY (appears above the form fields) */}
+            {Object.keys(formErrors).length > 0 && (
+              <div className="border border-red-500 bg-red-50 text-red-700 px-4 py-3 rounded mb-2">
+                <p className="font-medium">Mohon perbaiki kesalahan berikut:</p>
+                <ul className="mt-2 list-disc list-inside text-sm">
+                  {Object.entries(formErrors).map(([k, v]) => (
+                    <li key={k}>{v}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {/* JENIS */}
             <div>
               <p className="text-sm font-medium mb-2">
@@ -258,23 +376,22 @@ export default function PengaduanPage() {
                   placeholder="Nama Anda *"
                   value={form.nama}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#298064]"
+                  className={`w-full border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 ${formErrors.nama ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-[#298064]'}`}
                   required={!form.anonim}
+                  maxLength={255}
                 />
 
                 <input
-                  type="tel"
+                  type="number"
                   name="nomor_telp"
+                  inputMode="numeric"
                   placeholder="Nomor Telepon (Hanya angka, min 10 digit) *"
                   value={form.nomor_telp}
                   onChange={handleChange}
-                  className={`w-full border ${errors.nomor_telp ? "border-red-500" : "border-gray-300"
-                    } rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#298064]`}
+                  className={`w-full border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 ${formErrors.nomor_telp ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-[#298064]'}`}
                   required={!form.anonim}
+                  maxLength={20}
                 />
-                {errors.nomor_telp && (
-                  <p className="text-red-500 text-xs">{errors.nomor_telp}</p>
-                )}
 
                 <input
                   type="email"
@@ -282,13 +399,10 @@ export default function PengaduanPage() {
                   placeholder="Email Anda (contoh: nama@domain.com) *"
                   value={form.email}
                   onChange={handleChange}
-                  className={`w-full border ${errors.email ? "border-red-500" : "border-gray-300"
-                    } rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#298064]`}
+                  className={`w-full border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 ${formErrors.email ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-[#298064]'}`}
                   required={!form.anonim}
+                  maxLength={100}
                 />
-                {errors.email && (
-                  <p className="text-red-500 text-xs">{errors.email}</p>
-                )}
               </div>
             )}
 
@@ -306,7 +420,8 @@ export default function PengaduanPage() {
                     nomor_telp: checked ? "" : form.nomor_telp,
                     email: checked ? "" : form.email,
                   });
-                  setErrors({});
+                  setFormErrors({});
+                  setError("");
                 }}
               />
               Apakah Anda ingin melaporkan secara anonim?
@@ -319,8 +434,9 @@ export default function PengaduanPage() {
               placeholder="Judul laporan *"
               value={form.judul}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#298064]"
+              className={`w-full border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 ${formErrors.judul ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-[#298064]'}`}
               required
+              maxLength={255}
             />
 
             {/* ISI */}
@@ -330,8 +446,9 @@ export default function PengaduanPage() {
               value={form.isi}
               onChange={handleChange}
               rows={5}
-              className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#298064]"
+              className={`w-full border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 ${formErrors.isi ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-[#298064]'}`}
               required
+              maxLength={10000}
             />
 
             {/* TANGGAL & LOKASI */}
@@ -341,7 +458,7 @@ export default function PengaduanPage() {
                 name="tanggal"
                 value={form.tanggal}
                 onChange={handleChange}
-                className="border border-gray-300 rounded-lg p-3 text-sm"
+                className={`border rounded-lg p-3 text-sm ${formErrors.tanggal ? 'border-red-500' : 'border-gray-300'}`}
                 required
               />
               <input
@@ -350,8 +467,9 @@ export default function PengaduanPage() {
                 placeholder="Lokasi kejadian *"
                 value={form.lokasi}
                 onChange={handleChange}
-                className="border border-gray-300 rounded-lg p-3 text-sm"
+                className={`border rounded-lg p-3 text-sm ${formErrors.lokasi ? 'border-red-500' : 'border-gray-300'}`}
                 required
+                maxLength={255}
               />
             </div>
 
@@ -361,7 +479,7 @@ export default function PengaduanPage() {
                 name="kategori"
                 value={form.kategori}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-3 pr-10 text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-[#298064]"
+                className={`w-full border rounded-lg px-3 py-3 pr-10 text-sm appearance-none bg-white focus:outline-none focus:ring-2 ${formErrors.kategori ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-[#298064]'}`}
               >
                 <option value="">Pilih Kategori</option>
                 {form.jenis === "pengaduan" ? (
@@ -403,7 +521,7 @@ export default function PengaduanPage() {
             <div
               onDrop={handleDrop}
               onDragOver={(e) => e.preventDefault()}
-              className="w-full border-2 border-dashed border-gray-300 rounded-xl p-6 md:p-10 text-center cursor-pointer hover:border-[#298064] transition"
+              className={`w-full border-2 border-dashed rounded-xl p-6 md:p-10 text-center cursor-pointer transition ${formErrors.file ? 'border-red-500 hover:border-red-500' : 'border-gray-300 hover:border-[#298064]'}`}
             >
               <label className="flex flex-col items-center justify-center cursor-pointer">
                 <div className="w-28 h-28 rounded-md flex items-center justify-center overflow-hidden border border-gray-200 bg-gray-50">
@@ -447,12 +565,15 @@ export default function PengaduanPage() {
 
                 <input
                   type="file"
-                  accept="image/*,.pdf"
+                  accept=".jpg,.jpeg,.png,.webp,.pdf"
                   onChange={handleFileChange}
                   className="hidden"
                 />
               </label>
             </div>
+            {formErrors.file && (
+              <p className="text-red-500 text-xs -mt-2">{formErrors.file}</p>
+            )}
 
             {/* OPSI */}
             {successMessage && (
@@ -461,9 +582,9 @@ export default function PengaduanPage() {
               </div>
             )}
 
-            {errors.submit && (
+            {error && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                {errors.submit}
+                {error}
               </div>
             )}
 
