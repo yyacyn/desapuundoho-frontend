@@ -562,7 +562,7 @@ export default function Penduduk() {
         <>
             <Navbar />
 
-            <section className="w-full bg-[#f2f2f2] px-4 pb-16 pt-28 md:px-8 lg:px-10">
+            <section className="w-full bg-[#f2f2f2] px-4 pb-16 pt-28 md:pt-30 lg:px-10">
                 <div className="mx-auto w-full max-w-7xl space-y-14">
                     {errorMessage && (
                         <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
