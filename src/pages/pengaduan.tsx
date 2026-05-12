@@ -9,7 +9,7 @@ import { apiFetch, uploadToImageKit } from "../api";
 
 const MAX_LENGTHS = {
   nama: 255,
-  nomor_telp: 20,
+  nomor_telp: 15,
   email: 100,
   judul: 255,
   isi: 10000,
@@ -186,9 +186,10 @@ export default function PengaduanPage() {
       if (!form.nama.trim()) nextErrors.nama = `Nama wajib diisi (1-${MAX_LENGTHS.nama} karakter).`
       else if (form.nama.trim().length > MAX_LENGTHS.nama) nextErrors.nama = `Nama maksimal ${MAX_LENGTHS.nama} karakter.`
 
-      if (!form.nomor_telp.trim()) nextErrors.nomor_telp = 'Nomor telepon wajib diisi.'
+      if (!form.nomor_telp.trim()) nextErrors.nomor_telp = `Nomor telepon wajib diisi (1-${MAX_LENGTHS.nomor_telp} karakter).`
       else if (!/^\d+$/.test(form.nomor_telp)) nextErrors.nomor_telp = 'Nomor telepon hanya boleh berisi angka.'
       else if (form.nomor_telp.trim().length < 10) nextErrors.nomor_telp = 'Nomor telepon minimal 10 digit.'
+      else if (form.nomor_telp.trim().length > MAX_LENGTHS.nomor_telp) nextErrors.nomor_telp = `Nomor telepon maksimal ${MAX_LENGTHS.nomor_telp} karakter.`
 
       if (!form.email.trim()) nextErrors.email = 'Email wajib diisi.'
       else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = 'Email harus valid (contoh: nama@domain.com).'
