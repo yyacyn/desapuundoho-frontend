@@ -51,6 +51,7 @@ function App() {
                 <Route path="/infografis/stunting" element={<Stunting />} />
                 <Route path="/infografis/bansos" element={<Bansos />} />
                 <Route path="/infografis/sdgs" element={<SDGs />} />
+                <Route path="/pengaduan" element={<Pengaduan />} />
 
                 {/* Debug Catch-all: Show exactly what path React is seeing */}
                 <Route path="*" element={

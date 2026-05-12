@@ -37,6 +37,7 @@ export default function Navbar() {
     { name: "Berita", href: "/berita" },
     { name: "Belanja", href: "/belanja" },
     { name: "Galeri", href: "/galeri" },
+    { name: "Pengaduan", href: "/pengaduan" },
   ]
 
   return (
@@ -168,6 +169,17 @@ export default function Navbar() {
                     }
                   >
                     SDGS
+                  </NavLink>
+                </li>
+                                <li>
+                  <NavLink
+                    to="/pengaduan"
+                    onClick={() => setIsOpen(false)}
+                    className={({ isActive }) =>
+                      `block text-sm hover:translate-x-2 transition-all duration-300 ${isActive ? 'font-bold' : ''}`
+                    }
+                  >
+                    Pengaduan
                   </NavLink>
                 </li>
               </ul>
