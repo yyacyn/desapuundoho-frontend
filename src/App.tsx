@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import Home from './pages/Home'
 import Berita from './pages/Berita'
 import BeritaCopy from './pages/Beritacopy'
@@ -22,6 +22,7 @@ import AccessibilityWidget from "./components/AccessibilityWidget";
 import { AccessibilityProvider } from "./context/AccessibilityContext";
 
 function App() {
+  const navigate = useNavigate()
   const location = useLocation()
 
   useEffect(() => {
@@ -72,6 +73,16 @@ function App() {
             </APBDesProvider>
           </NewsProvider>
         </GalleryProvider>
+        <button
+          onClick={() => navigate("/pengaduan")}
+          className="fixed bottom-5 right-18 md:bottom-6 md:right-24 z-[20] hover:scale-105 transition"
+        >
+          <img
+            src="/assets/pengaduan2.png"
+            alt="pengaduan"
+            className="w-11 h-11 md:w-13 md:h-13 shadow-[0_0_15px_rgba(0,0,0,0.4)] rounded-full"
+          />
+        </button>
         <AccessibilityWidget />
       </AccessibilityProvider>
     </div>

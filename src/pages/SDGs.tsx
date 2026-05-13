@@ -93,12 +93,12 @@ export default function SDGs() {
     <>
       <Navbar />
 
-      <section className="bg-white py-12 px-4 md:px-28 w-full mx-auto pt-20 md:pt-30">
+      <section className="bg-white py-12 px-4 md:px-28 w-full mx-auto pt-28 md:pt-30">
         <div className="flex justify-center mb-8 md:mb-10">
           <img
             src="/assets/sgds/sgds illust.png"
             alt="Ilustrasi SDGs"
-            className="mx-auto h-auto object-contain max-w-xl md:max-w-2xl"
+            className="mx-auto h-auto object-contain max-w-xl md:max-w-2xl px-15 md:px-0"
           />
         </div>
 

@@ -3,15 +3,24 @@ import { Menu, X, ChevronDown } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import DropdownMenu from "./DropdownMenu"
 
-interface NavLink {
+interface NavItem {
   name: string
   href: string
   isDropdown?: boolean
 }
 
+const mobileInfografisItems = [
+  { name: "Penduduk", href: "/penduduk" },
+  { name: "Stunting", href: "/infografis/stunting" },
+  { name: "APBDesa", href: "/infografis/apbdesa" },
+  { name: "Bansos", href: "/infografis/bansos" },
+  { name: "SDGS", href: "/infografis/sdgs" },
+]
+
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+  const [isInfografisOpen, setIsInfografisOpen] = useState(false)
   const location = useLocation()
 
   const isHomePage = location.pathname === "/"
@@ -29,7 +38,13 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [isHomePage])
 
-  const navLinks: NavLink[] = [
+  // Tutup mobile menu saat route berubah
+  useEffect(() => {
+    setIsOpen(false)
+    setIsInfografisOpen(false)
+  }, [location.pathname])
+
+  const navLinks: NavItem[] = [
     { name: "Home", href: "/" },
     { name: "Profil", href: "/profil" },
     { name: "Infografis", href: "#", isDropdown: true },
@@ -37,7 +52,6 @@ export default function Navbar() {
     { name: "Berita", href: "/berita" },
     { name: "Belanja", href: "/belanja" },
     { name: "Galeri", href: "/galeri" },
-    { name: "Pengaduan", href: "/pengaduan" },
   ]
 
   return (
@@ -86,10 +100,11 @@ export default function Navbar() {
           ))}
         </ul>
 
-        {/* Mobile Button */}
+        {/* Mobile Hamburger Button */}
         <button
           className="md:hidden text-white"
           onClick={() => setIsOpen(!isOpen)}
+          aria-label="Toggle menu"
         >
           {isOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
@@ -98,92 +113,55 @@ export default function Navbar() {
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden bg-[#298064] px-6 pb-6">
-          <ul className="flex flex-col gap-4 text-white font-medium">
+          <ul className="flex flex-col gap-1 text-white font-medium">
             {navLinks.map((link, index) => (
-              <li key={index}>
-                <NavLink
-                  to={link.href}
-                  onClick={() => setIsOpen(false)}
-                  className={({ isActive }) =>
-                    `block hover:translate-x-2 transition-all duration-300 ${isActive ? 'font-bold' : ''}`
-                  }
-                >
-                  {link.name}
-                </NavLink>
-              </li>
+              link.isDropdown ? (
+                /* Infografis accordion */
+                <li key={index}>
+                  <button
+                    onClick={() => setIsInfografisOpen(!isInfografisOpen)}
+                    className="flex items-center justify-between w-full py-3 hover:translate-x-2 transition-all duration-300"
+                  >
+                    <span>Infografis</span>
+                    <ChevronDown
+                      size={18}
+                      className={`transition-transform duration-300 ${isInfografisOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                  {/* Sub-menu Infografis */}
+                  {isInfografisOpen && (
+                    <ul className="flex flex-col gap-1 pl-4 border-l-2 border-white/30 mb-2">
+                      {mobileInfografisItems.map((item, i) => (
+                        <li key={i}>
+                          <NavLink
+                            to={item.href}
+                            onClick={() => setIsOpen(false)}
+                            className={({ isActive }) =>
+                              `block py-2 text-sm hover:translate-x-2 transition-all duration-300 ${isActive ? 'font-bold' : 'text-white/90'}`
+                            }
+                          >
+                            {item.name}
+                          </NavLink>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              ) : (
+                /* Item biasa */
+                <li key={index}>
+                  <NavLink
+                    to={link.href}
+                    onClick={() => setIsOpen(false)}
+                    className={({ isActive }) =>
+                      `block py-3 hover:translate-x-2 transition-all duration-300 ${isActive ? 'font-bold' : ''}`
+                    }
+                  >
+                    {link.name}
+                  </NavLink>
+                </li>
+              )
             ))}
-            {/* Infografis Submenu for Mobile */}
-            <li className="pl-4 border-l-2 border-white/30">
-              <div className="text-sm font-medium text-white/80 mb-2">Infografis</div>
-              <ul className="flex flex-col gap-2">
-                <li>
-                  <NavLink
-                    to="/Penduduk"
-                    onClick={() => setIsOpen(false)}
-                    className={({ isActive }) =>
-                      `block text-sm hover:translate-x-2 transition-all duration-300 ${isActive ? 'font-bold' : ''}`
-                    }
-                  >
-                    Penduduk
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/infografis/stunting"
-                    onClick={() => setIsOpen(false)}
-                    className={({ isActive }) =>
-                      `block text-sm hover:translate-x-2 transition-all duration-300 ${isActive ? 'font-bold' : ''}`
-                    }
-                  >
-                    Stunting
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/infografis/apbdesa"
-                    onClick={() => setIsOpen(false)}
-                    className={({ isActive }) =>
-                      `block text-sm hover:translate-x-2 transition-all duration-300 ${isActive ? 'font-bold' : ''}`
-                    }
-                  >
-                    APBDesa
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/infografis/bansos"
-                    onClick={() => setIsOpen(false)}
-                    className={({ isActive }) =>
-                      `block text-sm hover:translate-x-2 transition-all duration-300 ${isActive ? 'font-bold' : ''}`
-                    }
-                  >
-                    Bansos
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/infografis/sdgs"
-                    onClick={() => setIsOpen(false)}
-                    className={({ isActive }) =>
-                      `block text-sm hover:translate-x-2 transition-all duration-300 ${isActive ? 'font-bold' : ''}`
-                    }
-                  >
-                    SDGS
-                  </NavLink>
-                </li>
-                                <li>
-                  <NavLink
-                    to="/pengaduan"
-                    onClick={() => setIsOpen(false)}
-                    className={({ isActive }) =>
-                      `block text-sm hover:translate-x-2 transition-all duration-300 ${isActive ? 'font-bold' : ''}`
-                    }
-                  >
-                    Pengaduan
-                  </NavLink>
-                </li>
-              </ul>
-            </li>
           </ul>
         </div>
       )}

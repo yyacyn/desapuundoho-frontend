@@ -120,15 +120,15 @@ export default function Belanja() {
     <>
       <Navbar />
 
-      {error && (
+      {/* {error && (
         <section className="w-full px-4 pt-4 md:px-8 lg:px-10">
           <div className="mx-auto w-full max-w-7xl rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </div>
         </section>
-      )}
+      )} */}
 
-      <section className="w-full bg-[#f2f2f2] px-4 pb-16 pt-24 md:px-8 lg:px-10">
+      <section className="w-full bg-[#f2f2f2] px-4 pb-16 pt-28 md:pt-30 md:px-8 lg:px-10">
         <div className="mx-auto w-full max-w-7xl">
           <div className="relative">
             <label htmlFor="search-product" className="sr-only">
@@ -143,7 +143,7 @@ export default function Belanja() {
                 setCurrentPage(1)
                 setSearchTerm(event.target.value)
               }}
-              className="w-full rounded-xl border border-gray-300 bg-[#e8eaeb] py-3 pl-5 pr-11 text-sm text-gray-700 placeholder:text-gray-400 focus:border-[#298064] focus:outline-none focus:ring-2 focus:ring-[#298064]/30"
+              className="w-full rounded-xl shadow-[0_0_15px_rgba(0,0,0,0.1)]  py-3 pl-4 pr-10 text-gray-700"
             />
             <Search
               size={20}

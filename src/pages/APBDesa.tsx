@@ -463,7 +463,7 @@ export default function APBDesa() {
   return (
     <>
       <Navbar />
-      <section className="bg-white py-12 px-4 md:px-28 w-full mx-auto pt-20 md:pt-30">
+      <section className="bg-white py-12 px-4 md:px-28 w-full mx-auto pt-28 md:pt-30">
         {/* Header with Year Selector */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div className="invisible">
@@ -734,25 +734,25 @@ export default function APBDesa() {
                             )
 
                             return (
-                            <div
-                              key={`${item.id}-${detailItem.uraian}-row`}
-                              className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-2 md:gap-8"
-                            >
-                              <p className="text-sm text-gray-700 leading-snug">{detailItem.uraian}</p>
-                              <div className="space-y-2">
-                                <p className="text-sm text-gray-700 text-left md:text-right leading-snug">{detailItem.anggaran}</p>
-                                <div className="flex items-center gap-2 md:justify-end">
-                                  <div className="w-full md:w-56 bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                                    <div
-                                      className="h-2.5 bg-emerald-600 rounded-full transition-all duration-500"
-                                      style={{ width: `${detailPercentage}%` }}
-                                      aria-hidden="true"
-                                    />
+                              <div
+                                key={`${item.id}-${detailItem.uraian}-row`}
+                                className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-2 md:gap-8"
+                              >
+                                <p className="text-sm text-gray-700 leading-snug">{detailItem.uraian}</p>
+                                <div className="space-y-2">
+                                  <p className="text-sm text-gray-700 text-left md:text-right leading-snug">{detailItem.anggaran}</p>
+                                  <div className="flex items-center gap-2 md:justify-end">
+                                    <div className="w-full md:w-56 bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                                      <div
+                                        className="h-2.5 bg-emerald-600 rounded-full transition-all duration-500"
+                                        style={{ width: `${detailPercentage}%` }}
+                                        aria-hidden="true"
+                                      />
+                                    </div>
+                                    <span className="text-xs font-semibold text-gray-700 w-10 text-right">{detailPercentage}%</span>
                                   </div>
-                                  <span className="text-xs font-semibold text-gray-700 w-10 text-right">{detailPercentage}%</span>
                                 </div>
                               </div>
-                            </div>
                             )
                           })}
 

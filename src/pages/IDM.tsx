@@ -322,12 +322,29 @@ export default function IDM() {
     <>
       <Navbar />
 
-      <section className="w-full bg-[#f2f2f2] pt-24 md:pt-30 pb-14 px-4 md:px-10 xl:px-16">
+      <section className="w-full bg-[#f2f2f2] pt-28 md:pt-30 pb-14 px-4 md:px-10 xl:px-16">
         <div className="mx-auto w-full max-w-7xl">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <h1 className="text-4xl font-bold text-[#298064] md:text-5xl">IDM Puundoho</h1>
             <div className="flex items-center gap-3">
-              <label htmlFor="idm-year" className="text-sm font-semibold text-gray-700">Tahun Data</label>
+            </div>
+          </div>
+
+          <div className="md:flex items-start justify-between gap-4">
+
+            <p className="mt-2 max-w-3xl text-base leading-relaxed text-black md:text-lg">
+              Indeks Desa Membangun (IDM) merupakan indeks komposit yang dibentuk dari tiga indeks, yaitu Indeks Ketahanan Sosial,
+              Indeks Ketahanan Ekonomi, dan Indeks Ketahanan Ekologi/Lingkungan.
+            </p>
+
+            <div className="flex items-center gap-3 whitespace-nowrap pt-5 md:pt-0">
+              <label
+                htmlFor="idm-year"
+                className="text-sm font-semibold text-gray-700"
+              >
+                Tahun Data
+              </label>
+
               <select
                 id="idm-year"
                 className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#298064]"
@@ -335,15 +352,14 @@ export default function IDM() {
                 onChange={(e) => setIdmYear(Number(e.target.value))}
               >
                 {IDM_YEARS.map((year) => (
-                  <option key={year} value={year}>{year}</option>
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
                 ))}
               </select>
             </div>
+
           </div>
-          <p className="mt-2 max-w-3xl text-base leading-relaxed text-black md:text-lg">
-            Indeks Desa Membangun (IDM) merupakan indeks komposit yang dibentuk dari tiga indeks, yaitu Indeks Ketahanan Sosial,
-            Indeks Ketahanan Ekonomi, dan Indeks Ketahanan Ekologi/Lingkungan.
-          </p>
 
           {error && <p className="mt-3 text-sm font-medium text-red-600">{error}</p>}
 

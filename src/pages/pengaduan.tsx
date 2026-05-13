@@ -308,7 +308,7 @@ export default function PengaduanPage() {
       <Navbar />
       <div className="min-h-screen bg-gray-100 md:py-16">
         {/* HERO */}
-        <div className="bg-gradient-to-r from-[#298064] to-[#4de8b7] text-white text-center py-16 px-4">
+        <div className="bg-gradient-to-r from-[#298064] to-[#4de8b7] text-white text-center py-16 px-4 pt-28 md:pt-20">
           <h1 className="text-2xl md:text-4xl font-bold mb-3">
             Layanan Aspirasi dan Pengaduan Desa
           </h1>

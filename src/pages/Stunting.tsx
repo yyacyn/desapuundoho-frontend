@@ -122,7 +122,7 @@ export default function Stunting() {
     <>
       <Navbar />
 
-      <section className="bg-white py-12 px-4 md:px-28 w-full mx-auto pt-20 md:pt-30">
+      <section className="bg-white py-12 px-4 md:px-28 w-full mx-auto pt-28 md:pt-30">
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-[#298064]">Data Stunting</h1>
           {error && <p className="mt-2 text-sm font-medium text-red-600">{error}</p>}
@@ -242,10 +242,10 @@ export default function Stunting() {
                     <div className="flex items-center gap-2 w-full md:justify-end">
                       <div className="flex-1 min-w-0">
                         <div className="w-full min-w-[180px] md:min-w-[240px] lg:min-w-[320px] max-w-[260px] md:max-w-[320px] lg:max-w-[420px] bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                        <div
-                          className="h-2.5 bg-emerald-600 rounded-full transition-all duration-500"
-                          style={{ width: `${headerPercentage}%` }}
-                        />
+                          <div
+                            className="h-2.5 bg-emerald-600 rounded-full transition-all duration-500"
+                            style={{ width: `${headerPercentage}%` }}
+                          />
                         </div>
                       </div>
                       <span className="text-xs font-semibold text-gray-700 w-10 text-right">{headerPercentage}%</span>

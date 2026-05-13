@@ -146,7 +146,7 @@ export default function Berita() {
   return (
     <>
       <Navbar />
-      <section className="bg-white py-12 px-4 md:px-28 md:pt-30 pt-15 w-full mx-auto">
+      <section className="bg-white py-12 px-4 md:px-28 pt-28 md:pt-30 w-full mx-auto">
         {/* Search */}
         <div className="relative mb-10">
           <input
