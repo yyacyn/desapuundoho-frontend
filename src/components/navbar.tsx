@@ -52,6 +52,7 @@ export default function Navbar() {
     { name: "Berita", href: "/berita" },
     { name: "Belanja", href: "/belanja" },
     { name: "Galeri", href: "/galeri" },
+    { name: "Listing", href: "/listing" },
   ]
 
   return (

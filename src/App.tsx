@@ -15,6 +15,7 @@ import IDM from './pages/IDM'
 import Belanja from './pages/Belanja'
 import DetailBelanja from './pages/DetailBelanja'
 import Penduduk from './pages/Penduduk'
+import Listing from './pages/Listing'
 import { GalleryProvider } from "./context/GalleryContext";
 import { NewsProvider } from "./context/NewsContext";
 import { APBDesProvider } from './context/APBDesaContext'
@@ -47,6 +48,7 @@ function App() {
                 <Route path="/penduduk" element={<Penduduk />} />
                 <Route path="/belanja" element={<Belanja />} />
                 <Route path="/detail-belanja/:productId" element={<DetailBelanja />} />
+                <Route path="/listing" element={<Listing />} />
                 {/* Infografis Group */}
                 <Route path="/infografis/apbdesa" element={<APBDesa />} />
                 <Route path="/infografis/stunting" element={<Stunting />} />
