@@ -74,11 +74,11 @@ export default function BaganDesa() {
           <p className="text-gray-600">Tidak ada data struktur organisasi</p>
         </div>
       ) : (
-        <div className="relative flex items-center justify-center group">
+        <div className="relative flex items-center justify-center group w-full bg-gray-50 border border-gray-150 rounded-2xl p-4 md:p-6 shadow-sm overflow-hidden min-h-[300px] md:min-h-[450px]">
           {items.length > 1 && (
             <button
               onClick={handlePrevious}
-              className="absolute left-4 z-10 bg-white hover:bg-[#2f7f67] hover:text-white shadow-[0_0_15px_rgba(0,0,0,0.1)] rounded-full p-3 transition-all duration-300 transform hover:scale-110"
+              className="absolute left-4 z-10 bg-white hover:bg-[#2f7f67] hover:text-white shadow-[0_0_15px_rgba(0,0,0,0.15)] rounded-full p-3 transition-all duration-300 transform hover:scale-110"
               aria-label="Previous"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
@@ -91,15 +91,13 @@ export default function BaganDesa() {
             key={currentItem?.id}
             src={currentItem?.image_url}
             alt={currentItem?.caption || "Struktur Organisasi"}
-            width={800}
-            height={500}
-            className="rounded-xl max-w-full h-auto object-cover transition-opacity duration-500"
+            className="rounded-xl max-w-full max-h-[650px] w-auto h-auto object-contain transition-opacity duration-500 shadow-sm"
           />
 
           {items.length > 1 && (
             <button
               onClick={handleNext}
-              className="absolute right-4 z-10 bg-white hover:bg-[#2f7f67] hover:text-white shadow-[0_0_15px_rgba(0,0,0,0.1)] rounded-full p-3 transition-all duration-300 transform hover:scale-110"
+              className="absolute right-4 z-10 bg-white hover:bg-[#2f7f67] hover:text-white shadow-[0_0_15px_rgba(0,0,0,0.15)] rounded-full p-3 transition-all duration-300 transform hover:scale-110"
               aria-label="Next"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">

@@ -1,9 +1,11 @@
 import { useEffect, useState, useMemo } from "react"
 import L from "leaflet"
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
+import { MapContainer, TileLayer, Marker, Popup, useMap, GeoJSON } from "react-leaflet"
 import Navbar from "../components/navbar"
 import Footer from "../components/footer"
 import { apiFetch } from "../api"
+import { RiMapPin2Line } from "react-icons/ri"
+import geojsonData from "../assets/batas-desa.json"
 
 // Leaflet CSS
 import "leaflet/dist/leaflet.css"
@@ -65,6 +67,19 @@ function MapBounds({ listings }: MapBoundsProps) {
             map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 })
         }
     }, [listings, map])
+    return null
+}
+
+function MapFocus({ selectedListing }: { selectedListing: ListingItem | null }) {
+    const map = useMap()
+    useEffect(() => {
+        if (!selectedListing) return
+        const coordParts = selectedListing.koordinat.split(",").map((v) => parseFloat(v.trim()))
+        if (coordParts.length === 2 && !isNaN(coordParts[0]) && !isNaN(coordParts[1])) {
+            const [lat, lng] = coordParts
+            map.setView([lat, lng], 16, { animate: true })
+        }
+    }, [selectedListing, map])
     return null
 }
 
@@ -172,7 +187,11 @@ export default function Listing() {
                                                     }`}
                                             >
                                                 <p className="font-semibold text-sm">{item.nama}</p>
-                                                <p className="text-xs text-gray-500 mt-1">
+                                                <div className="flex items-center gap-1 text-xs text-gray-600 mt-1 font-mono">
+                                                    <RiMapPin2Line className="text-[#2f7f67] shrink-0" size={14} />
+                                                    <span>{item.koordinat}</span>
+                                                </div>
+                                                <p className="text-xs text-gray-400 mt-1">
                                                     {new Date(item.created_at).toLocaleDateString("id-ID")}
                                                 </p>
                                             </button>
@@ -186,7 +205,7 @@ export default function Listing() {
                         <div className="lg:col-span-2 order-1 lg:order-2">
                             <div className="bg-white rounded-xl shadow-[0_0_15px_rgba(0,0,0,0.1)] overflow-hidden h-96 md:h-[500px] relative z-0">
                                 <MapContainer
-                                    center={[-8.8499, 115.2863]}
+                                    center={[-3.111, 121.095]}
                                     zoom={13}
                                     className="w-full h-full relative"
                                     style={{ zIndex: 1 }}
@@ -194,6 +213,17 @@ export default function Listing() {
                                     <TileLayer
                                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                    />
+
+                                    <GeoJSON
+                                        data={geojsonData}
+                                        style={{
+                                            color: "#2f7f67",
+                                            weight: 3,
+                                            opacity: 0.8,
+                                            fillColor: "#2f7f67",
+                                            fillOpacity: 0.2
+                                        }}
                                     />
 
                                     {listings.map((item) => {
@@ -232,6 +262,7 @@ export default function Listing() {
                                     })}
 
                                     <MapBounds listings={listings} />
+                                    <MapFocus selectedListing={selectedListing} />
                                 </MapContainer>
                             </div>
 

@@ -15,8 +15,8 @@ interface Product {
   image_url: string
 }
 
-const PRICE_MIN = 20000
-const PRICE_MAX = 1000000
+const PRICE_MIN = 0
+const PRICE_MAX = 10000000
 const PAGE_SIZE = 6
 
 const formatRupiah = (value: number): string => `Rp. ${Number(value || 0).toLocaleString("id-ID")}`
@@ -120,13 +120,13 @@ export default function Belanja() {
     <>
       <Navbar />
 
-      {/* {error && (
+      {error && (
         <section className="w-full px-4 pt-4 md:px-8 lg:px-10">
           <div className="mx-auto w-full max-w-7xl rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </div>
         </section>
-      )} */}
+      )}
 
       <section className="w-full bg-[#f2f2f2] px-4 pb-16 pt-28 md:pt-30 md:px-8 lg:px-10">
         <div className="mx-auto w-full max-w-7xl">
@@ -217,6 +217,12 @@ export default function Belanja() {
                   Memuat produk desa...
                 </div>
               ) : null}
+
+              {!loading && pagedProducts.length === 0 && (
+                <div className="flex min-h-[320px] items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white text-sm text-gray-500">
+                  Tidak ada produk desa yang ditemukan.
+                </div>
+              )}
 
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {pagedProducts.map((product) => (

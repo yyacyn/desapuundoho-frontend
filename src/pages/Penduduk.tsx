@@ -390,15 +390,15 @@ export default function Penduduk() {
     const [hoveredPendidikan, setHoveredPendidikan] = useState<PendidikanHoverState | null>(null)
     const [hoveredWajibPilih, setHoveredWajibPilih] = useState<PendidikanHoverState | null>(null)
     const [records, setRecords] = useState<PendudukRecord[]>([])
+    const [datasets, setDatasets] = useState<DatasetInfo[]>([])
+    const [selectedDatasetId, setSelectedDatasetId] = useState<number | null>(null)
     const [datasetYear, setDatasetYear] = useState<number | null>(null)
     const [loading, setLoading] = useState(true)
     const [errorMessage, setErrorMessage] = useState("")
 
+    // Fetch datasets list on mount
     useEffect(() => {
-        const fetchPenduduk = async () => {
-            setLoading(true)
-            setErrorMessage("")
-
+        const fetchDatasetsList = async () => {
             try {
                 const datasetRes = await apiFetch("/penduduk/datasets")
                 if (!datasetRes.ok) {
@@ -406,27 +406,51 @@ export default function Penduduk() {
                 }
 
                 const datasetsJson = await datasetRes.json()
-                const datasets: DatasetInfo[] = Array.isArray(datasetsJson)
+                const dsList: DatasetInfo[] = Array.isArray(datasetsJson)
                     ? datasetsJson
                     : Array.isArray(datasetsJson?.datasets)
                         ? datasetsJson.datasets
                         : []
 
-                if (datasets.length === 0) {
-                    setRecords([])
-                    return
+                setDatasets(dsList)
+                if (dsList.length > 0) {
+                    // Sort descending by year to find the latest
+                    const sorted = [...dsList].sort((a, b) => Number(b.tahun || 0) - Number(a.tahun || 0))
+                    setSelectedDatasetId(sorted[0].id)
+                    setDatasetYear(Number(sorted[0].tahun || 0) || null)
+                } else {
+                    setLoading(false)
                 }
+            } catch (error) {
+                setErrorMessage(error instanceof Error ? error.message : "Terjadi kesalahan saat memuat dataset")
+                setLoading(false)
+            }
+        }
 
-                const latestDataset = [...datasets].sort((a, b) => Number(b.tahun || 0) - Number(a.tahun || 0))[0]
-                setDatasetYear(Number(latestDataset.tahun || 0) || null)
+        fetchDatasetsList()
+    }, [])
 
-                const recordsRes = await apiFetch(`/penduduk/datasets/${latestDataset.id}/records`)
+    // Fetch records when selectedDatasetId changes
+    useEffect(() => {
+        if (!selectedDatasetId) return
+
+        const fetchDatasetRecords = async () => {
+            setLoading(true)
+            setErrorMessage("")
+            try {
+                const recordsRes = await apiFetch(`/penduduk/datasets/${selectedDatasetId}/records`)
                 if (!recordsRes.ok) {
                     throw new Error("Gagal memuat data penduduk")
                 }
 
                 const recordsJson = await recordsRes.json()
                 setRecords(Array.isArray(recordsJson?.penduduk) ? recordsJson.penduduk : [])
+                
+                // Keep the dataset year in sync
+                const currentDs = datasets.find(d => d.id === selectedDatasetId)
+                if (currentDs) {
+                    setDatasetYear(Number(currentDs.tahun || 0) || null)
+                }
             } catch (error) {
                 setRecords([])
                 setErrorMessage(error instanceof Error ? error.message : "Terjadi kesalahan saat memuat data penduduk")
@@ -435,8 +459,8 @@ export default function Penduduk() {
             }
         }
 
-        fetchPenduduk()
-    }, [])
+        fetchDatasetRecords()
+    }, [selectedDatasetId, datasets])
 
     const ageGroupData = useMemo<AgeGroupData[]>(() => {
         const buckets = AGE_BUCKETS.map((usia) => ({ usia, lakiLaki: 0, perempuan: 0 }))
@@ -578,8 +602,31 @@ export default function Penduduk() {
                                 Desa Puundoho, Kecamatan Pakue Utara, Kabupaten Kolaka Utara, Provinsi Sulawesi Tenggara
                             </p>
                             <p className="mt-2 text-sm text-[#4b5563]">
-                                {loading ? "Memuat dataset penduduk terbaru..." : datasetYear ? `Dataset tahun ${datasetYear}` : "Dataset tidak tersedia"}
+                                {loading ? "Memuat data penduduk..." : datasetYear ? `Dataset tahun ${datasetYear}` : "Dataset tidak tersedia"}
                             </p>
+
+                            {datasets.length > 0 && (
+                                <div className="mt-4 flex flex-col gap-2">
+                                    <label htmlFor="dataset-select" className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                        Pilih Tahun Dataset
+                                    </label>
+                                    <select
+                                        id="dataset-select"
+                                        value={selectedDatasetId || ""}
+                                        onChange={(e) => {
+                                            const id = Number(e.target.value)
+                                            setSelectedDatasetId(id)
+                                        }}
+                                        className="max-w-[200px] rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-[#298064] shadow-sm transition-colors focus:border-[#298064] focus:outline-none"
+                                    >
+                                        {datasets.map((d) => (
+                                            <option key={d.id} value={d.id}>
+                                                Tahun {d.tahun}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
 
                             <div className="mt-8 max-w-[280px] pl-1 sm:max-w-[340px] lg:max-w-[420px] md:mt-10">
                                 <img

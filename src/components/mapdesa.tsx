@@ -1,24 +1,51 @@
+import { MapContainer, TileLayer, GeoJSON } from "react-leaflet"
+import "leaflet/dist/leaflet.css"
+import geojsonData from "../assets/batas-desa.json"
+
+const leafletStyleFix = `
+  .leaflet-control {
+    z-index: 10 !important;
+  }
+  .leaflet-popup {
+    z-index: 12 !important;
+  }
+  .leaflet-tooltip {
+    z-index: 11 !important;
+  }
+`
+
 export default function MapDesa() {
   return (
     <section className="max-w-7xl mx-auto px-6 py-16">
+      <style>{leafletStyleFix}</style>
       <div className="w-16 h-1 bg-[#2D7A5F] mb-3"></div>
       <h2 className="text-3xl font-bold text-[#2f7f67] mb-10">
         Peta Lokasi Desa
       </h2>
 
       <div className="grid md:grid-cols-3 gap-10 items-start">
-        <div className="rounded-xl overflow-hidden shadow-lg h-[400px] md:col-span-2">
-          <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15978609.69911266!2d121.0!3d-2.5!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2c210383c0c0c0c1%3A0x1234567890abcdef!2sIndonesia!5e0!3m2!1sid!2sid!4v1234567890123!5m2!1sid!2sid"
-            width="100%"
-            height="100%"
-            style={{ border: 0 }}
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            className="w-full h-full"
-            title="Peta Indonesia"
-          ></iframe>
+        <div className="rounded-xl overflow-hidden shadow-lg h-[400px] md:col-span-2 relative z-0">
+          <MapContainer
+            center={[-3.111, 121.095]}
+            zoom={13}
+            className="w-full h-full relative"
+            style={{ zIndex: 1 }}
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+            <GeoJSON
+              data={geojsonData}
+              style={{
+                color: "#2f7f67",
+                weight: 3,
+                opacity: 0.8,
+                fillColor: "#2f7f67",
+                fillOpacity: 0.2
+              }}
+            />
+          </MapContainer>
         </div>
 
         <div className="w-full bg-gray-200 rounded-2xl p-6 space-y-6">
@@ -29,22 +56,22 @@ export default function MapDesa() {
 
               <div className="flex flex-col">
                 <span>Utara</span>
-                <span>-</span>
+                <span>Desa Tetewari</span>
               </div>
 
               <div className="flex flex-col">
                 <span>Selatan</span>
-                <span>-</span>
+                <span>Desa Lawata</span>
               </div>
 
               <div className="flex flex-col">
                 <span>Timur</span>
-                <span>-</span>
+                <span>Kawasan Hutan</span>
               </div>
 
               <div className="flex flex-col">
                 <span>Barat</span>
-                <span>-</span>
+                <span>Teluk Bone</span>
               </div>
 
             </div>
@@ -55,7 +82,7 @@ export default function MapDesa() {
           {/* Luas Desa */}
           <div className="flex justify-between items-center">
             <span className="font-semibold text-lg">Luas Desa:</span>
-            <span>0m²</span>
+            <span>470,57 Ha</span>
           </div>
 
           <hr className="border-gray-400" />
