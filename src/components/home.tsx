@@ -110,7 +110,7 @@ export function TentangKami() {
 
         <div className="relative">
           <img
-            src="/assets/home/tentang.png"
+            src="/assets/home/tentang2.jpeg"
             alt="Landscape"
             className="w-full h-140 object-cover rounded-xl shadow-2xl"
           />

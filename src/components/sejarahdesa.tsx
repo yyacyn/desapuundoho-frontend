@@ -8,9 +8,10 @@ export default function SejarahDesa() {
         </h2>
         <div className="space-y-6 text-gray-200 leading-relaxed">
           <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ac
-            est orci. Vivamus fringilla nisl tellus, sit amet egestas lorem
-            dignissim in.
+            Desa Puundoho merupakan salah satu desa yang terletak di Kecamatan Baula, Kabupaten Kolaka, Provinsi Sulawesi Tenggara. Nama "Puundoho" berasal dari bahasa Tolaki yang memiliki makna mendalam bagi masyarakat setempat. Sejak dahulu, desa ini dihuni oleh masyarakat yang menggantungkan kehidupan pada sektor pertanian, perkebunan, dan perikanan.
+          </p>
+          <p>
+            Seiring berjalannya waktu, Desa Puundoho terus berkembang dengan tetap menjaga nilai-nilai adat dan budaya lokal yang diwariskan oleh para leluhur. Semangat gotong royong dan kebersamaan menjadi fondasi utama dalam membangun desa menuju masyarakat yang maju, sejahtera, dan berbudaya.
           </p>
         </div>
       </div>

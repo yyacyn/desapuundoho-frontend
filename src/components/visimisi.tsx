@@ -15,16 +15,29 @@ export default function VisiMisi() {
           <div>
             <h2 className="text-3xl font-bold mb-2">Visi</h2>
             <p className="text-gray-200">
-              Install the plugin and convert your designs to a responsive site.
+              Terwujudnya Desa Puundoho yang Maju, Berkualitas, Berbudaya dan Religius
             </p>
           </div>
 
           <div>
             <h2 className="text-3xl font-bold mb-3">Misi</h2>
             <ul className="list-disc ml-6 space-y-2 text-gray-200">
-              <li>Install the plugin and convert your designs to a responsive site.Install the plugin and convert your designs to a responsive site.</li>
-              <li>Install the plugin and convert your designs to a responsive site.</li>
-              <li>Install the plugin and convert your designs to a responsive site.</li>
+              <li>Meningkatkan kecakapan, pengetahuan, dan keahlian tenaga kerja produktif di
+              </li>
+              <li>Mempercepat pembangunan sarana dan prasarana fisik desa yang merata guna memperlancar mobilitas warga dan mendukung perekonomian lokal.
+              </li>
+              <li>Membangun sistem pelayanan publik yang ramah, profesional, jujur, dan tanggap terhadap kebutuhan masyarakat desa.
+              </li>
+              <li>Mendorong pertumbuhan ekonomi warga dengan membina UMKM, pertanian, serta mengoptimalkan usaha desa secara mandiri dan inovatif.
+              </li>
+              <li>Menjaga, melestarikan, dan menghormati nilai-nilai adat serta kebudayaan lokal sebagai bagian dari identitas sosial kemasyarakatan yang luhur.
+              </li>
+              <li>Mempererat tali silaturahmi, kekompakan, dan keharmonisan antarwarga melalui kegiatan sosial, olahraga, dan keagamaan bersama secara berkala.
+              </li>
+              <li>Membudayakan gerakan kebersihan, kelestarian alam, dan pemanfaatan pekarangan untuk menciptakan lingkungan desa yang asri, bersih, dan sehat.
+              </li>
+              <li>Menjadikan nilai-nilai moral keagamaan dan ketuhanan sebagai basis utama dalam membangun karakter warga serta arah pembangunan desa yang berkelanjutan.
+              </li>
             </ul>
           </div>
         </div>
