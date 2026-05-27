@@ -317,7 +317,8 @@ export default function APBDesa() {
         year: String(item.tahun),
         pendapatan: Number(item.total_pendapatan || 0),
         belanja: Number(item.total_pengeluaran || 0),
-      })),
+      }))
+      .slice(-5),
     [typedApbdList]
   )
 
@@ -581,13 +582,6 @@ export default function APBDesa() {
           </div>
         </div>
 
-        {/* Pendapatan dan Belanja dari Tahun ke Tahun */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">
-            Pendapatan dan Belanja Desa dari Tahun ke Tahun
-          </h2>
-          <BarChart data={chartDataYearly} title="Perbandingan Pendapatan dan Belanja" />
-        </div>
 
         {/* Pendapatan Desa */}
         <div className="mb-12">
@@ -1126,6 +1120,14 @@ export default function APBDesa() {
               })}
             </div>
           </div>
+        </div>
+
+        {/* Pendapatan dan Belanja Desa dari 5 Tahun Terakhir */}
+        <div className="mt-16">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">
+            Pendapatan dan Belanja Desa dari 5 Tahun Terakhir
+          </h2>
+          <BarChart data={chartDataYearly} title="Perbandingan Pendapatan dan Belanja" />
         </div>
       </section>
       <Footer siteSettings={undefined} />

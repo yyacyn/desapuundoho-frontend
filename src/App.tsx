@@ -30,6 +30,10 @@ function App() {
     console.log("Pathname detected by React:", location.pathname)
   }, [location])
 
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location.pathname])
+
   return (
     <div className="min-h-screen font-['Inter',sans-serif]">
       <AccessibilityProvider>

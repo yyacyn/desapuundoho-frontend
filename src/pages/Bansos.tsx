@@ -58,10 +58,9 @@ export default function Bansos() {
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState("")
   const [bansosData, setBansosData] = useState<BansosItem[]>([])
-  const [pendudukList, setPendudukList] = useState<PendudukRecord[]>([])
 
   useEffect(() => {
-    const fetchBansosAndPenduduk = async () => {
+    const fetchBansos = async () => {
       setLoading(true)
       setErrorMessage("")
 
@@ -74,26 +73,6 @@ export default function Bansos() {
         const bansosJson = await bansosRes.json()
         const parsedBansos = Array.isArray(bansosJson?.bansos) ? bansosJson.bansos : []
         setBansosData(parsedBansos)
-
-        const datasetRes = await apiFetch("/penduduk/datasets")
-        if (!datasetRes.ok) {
-          throw new Error("Gagal memuat dataset penduduk")
-        }
-
-        const datasets = await datasetRes.json()
-        if (!Array.isArray(datasets) || datasets.length === 0) {
-          setPendudukList([])
-          return
-        }
-
-        const newest = [...datasets].sort((a, b) => Number(b.tahun || 0) - Number(a.tahun || 0))[0]
-        const recordsRes = await apiFetch(`/penduduk/datasets/${newest.id}/records`)
-        if (!recordsRes.ok) {
-          throw new Error("Gagal memuat data penduduk")
-        }
-
-        const recordsJson = await recordsRes.json()
-        setPendudukList(Array.isArray(recordsJson?.penduduk) ? recordsJson.penduduk : [])
       } catch (error) {
         setBansosData([])
         setErrorMessage(error instanceof Error ? error.message : "Terjadi kesalahan saat memuat data")
@@ -102,7 +81,7 @@ export default function Bansos() {
       }
     }
 
-    fetchBansosAndPenduduk()
+    fetchBansos()
   }, [])
 
   const bansosYearlyData: BansosYearData[] = useMemo(() => {
@@ -159,10 +138,6 @@ export default function Bansos() {
     () => bansosData.filter((item) => item.nik_penerima === nikQuery),
     [bansosData, nikQuery]
   )
-  const matchedPenduduk = useMemo(
-    () => pendudukList.find((item) => item.nik === nikQuery) || null,
-    [pendudukList, nikQuery]
-  )
   const showSearchResult = nikQuery.length >= 8
 
   return (
@@ -216,15 +191,9 @@ export default function Bansos() {
                   </div>
                 ))}
               </div>
-            ) : matchedPenduduk ? (
-              <div className="border border-amber-100 bg-amber-50 rounded-lg p-3 md:p-4">
-                <p className="text-sm text-amber-700 font-semibold">NIK ditemukan di data penduduk, tetapi belum terdaftar sebagai penerima bansos.</p>
-                <p className="mt-1 text-sm text-gray-700">Nama: {matchedPenduduk.nama || "-"}</p>
-                <p className="text-sm text-gray-700">Alamat: {matchedPenduduk.alamat || "-"}</p>
-              </div>
             ) : (
               <div className="border border-red-100 bg-red-50 rounded-lg p-3 md:p-4">
-                <p className="text-sm text-red-700 font-semibold">NIK tidak ditemukan pada data penduduk maupun data penerima bansos.</p>
+                <p className="text-sm text-red-700 font-semibold">NIK tidak terdaftar sebagai penerima bansos.</p>
               </div>
             )}
           </div>

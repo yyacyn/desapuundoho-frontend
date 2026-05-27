@@ -18,6 +18,8 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Legend,
+  Label,
 } from 'recharts';
 
 // Berita
@@ -208,27 +210,11 @@ export function Sambutan() {
 // APBDesa
 // --------------------------------------------------------------
 export function APBDesa() {
-  // Data untuk grafik interaktif
-  const data = [
-    { hari: 'Senin', pengunjung: 80 },
-    { hari: 'Selasa', pengunjung: 100 },
-    { hari: 'Rabu', pengunjung: 90 },
-    { hari: 'Kamis', pengunjung: 110 },
-    { hari: 'Jumat', pengunjung: 122 },
-  ];
-
-  const { apbdList, pendapatanData, pengeluaranData, setSelectedYear, loading } = useAPBDes();
+  const { apbdList, pendapatanData, pengeluaranData, selectedYear, setSelectedYear, loading } = useAPBDes();
 
   const currentYear = new Date().getFullYear();
 
   const isInitialMount = useRef(true);
-  // 1. Atur agar context mengarah ke tahun sekarang saat komponen dimuat
-  // useEffect(() => {
-  //   const currentAPBD = apbdList.find(a => a.tahun === currentYear);
-  //   if (currentAPBD) {
-  //     setSelectedYear(currentAPBD.id);
-  //   }
-  // }, [apbdList, setSelectedYear, currentYear]);
 
   useEffect(() => {
     // Hanya jalankan jika ini mount pertama dan list sudah tersedia
@@ -241,7 +227,7 @@ export function APBDesa() {
     }
   }, [apbdList, setSelectedYear, currentYear]);
 
-  // 2. Hitung Total Pendapatan & Belanja secara real-time dari data context
+  // Hitung Total Pendapatan & Belanja secara real-time dari data context
   const totalPendapatan = useMemo(() =>
     pendapatanData.reduce((acc, curr) => acc + curr.jumlah, 0),
     [pendapatanData]);
@@ -250,18 +236,47 @@ export function APBDesa() {
     pengeluaranData.reduce((acc, curr) => acc + curr.jumlah, 0),
     [pengeluaranData]);
 
+  const selectedApbd = useMemo(() => {
+    return apbdList.find(a => a.id === selectedYear) || null;
+  }, [apbdList, selectedYear]);
+
+  const selectedYearLabel = selectedApbd ? selectedApbd.tahun : currentYear;
+
+  // Data untuk grafik tahunan dari apbdList
+  const chartData = useMemo(() => {
+    return [...apbdList]
+      .sort((a, b) => a.tahun - b.tahun)
+      .map((item) => ({
+        tahun: String(item.tahun),
+        pendapatan: Number(item.total_pendapatan || 0),
+        belanja: Number(item.total_pengeluaran || 0),
+      }));
+  }, [apbdList]);
+
   // Fungsi helper format rupiah
   const formatRupiah = (val: number) =>
-    new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(val);
+    new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(val);
+
+  // Formatter untuk YAxis ticks agar tidak terlalu panjang
+  const formatYAxis = (tick: number) => {
+    if (tick >= 1_000_000_000) {
+      return `Rp ${(tick / 1_000_000_000).toFixed(1)} M`;
+    }
+    if (tick >= 1_000_000) {
+      return `Rp ${(tick / 1_000_000).toFixed(0)} Jt`;
+    }
+    return `Rp ${tick.toLocaleString('id-ID')}`;
+  };
+
   return (
     <section className="max-w-7xl mx-auto px-6 py-20">
-      <div className="flex flex-col lg:flex-row gap-12">
+      <div className="flex flex-col lg:flex-row gap-12 items-center">
 
         {/* Sisi Kiri: Informasi Keuangan */}
         <div className="w-full lg:w-1/2 space-y-6">
           <div className="space-y-2">
             <div className="w-16 h-1 bg-[#2D7A5F] mb-3"></div>
-            <h1 className="text-[#2D7A5F] text-4xl font-bold">APB DESA {currentYear}</h1>
+            <h1 className="text-[#2D7A5F] text-4xl font-bold">APB DESA {selectedYearLabel}</h1>
             <p className="text-gray-600 leading-relaxed max-w-md">
               Akses cepat dan transparan terhadap APB Desa serta proyek pembangunan
             </p>
@@ -285,7 +300,7 @@ export function APBDesa() {
             </div>
           </div>
 
-          <Link to="/infografis/apbdesa"className="inline-flex items-center gap-3 bg-[#2D7A5F] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#235d49] transition-colors group">
+          <Link to="/infografis/apbdesa" className="inline-flex items-center gap-3 bg-[#2D7A5F] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#235d49] transition-colors group">
             Lihat Selengkapnya
             <span className="bg-white text-[#2D7A5F] rounded-full p-1 group-hover:translate-x-1 transition-transform">
               <ArrowRight size={18} />
@@ -293,39 +308,58 @@ export function APBDesa() {
           </Link>
         </div>
 
-        {/* Sisi Kanan: Grafik Interaktif */}
-        <div className="w-full lg:w-1/2 h-100 bg-white relative mt-15">
-          <div className="absolute left-0 top-1/2 -rotate-90 origin-left text-xs font-medium text-gray-500 -translate-y-12">
-            Jumlah Pengunjung
-          </div>
+        {/* Sisi Ranan: Grafik Interaktif */}
+        <div className="w-full lg:w-1/2 h-100 bg-white relative">
 
           <ResponsiveContainer
             width="100%"
             height="100%"
             style={{ outline: 'none' }}
           >
-            <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            <LineChart data={chartData} margin={{ top: 20, right: 30, left: 35, bottom: 10 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={true} horizontal={true} stroke="#f0f0f0" />
               <XAxis
-                dataKey="hari"
+                dataKey="tahun"
                 axisLine={{ stroke: '#999' }}
                 tickLine={false}
                 tick={{ fontSize: 12, fill: '#666' }}
-                label={{ value: 'Hari', position: 'insideBottom', offset: -10, fontSize: 12 }}
               />
               <YAxis
-                domain={[70, 130]}
+                tickFormatter={formatYAxis}
                 axisLine={{ stroke: '#999' }}
                 tickLine={false}
-                tick={{ fontSize: 12, fill: '#666' }}
-              />
+                tick={{ fontSize: 11, fill: '#666' }}
+                width={85}
+              >
+                <Label
+                  value="Nilai Anggaran"
+                  angle={-90}
+                  position="insideLeft"
+                  style={{ textAnchor: 'middle', fill: '#6b7280', fontSize: 12, fontWeight: 500 }}
+                  offset={10}
+                />
+              </YAxis>
               <Tooltip
-                contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                cursor={{ stroke: '#EAB308', strokeWidth: 1 }}
+                formatter={(value: any, name: string) => [formatRupiah(Number(value)), name === 'pendapatan' ? 'Pendapatan' : 'Belanja']}
+                contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
+                cursor={{ stroke: '#2D7A5F', strokeWidth: 1 }}
+                position={{ x: 0, y: 0 }}
+              />
+              <Legend align="center" verticalAlign="top" height={36} />
+              <Line
+                type="monotone"
+                dataKey="pendapatan"
+                name="Pendapatan"
+                stroke="#2D7A5F"
+                strokeWidth={3}
+                dot={{ r: 5, fill: '#2D7A5F', strokeWidth: 2, stroke: '#fff' }}
+                activeDot={{ r: 8, strokeWidth: 0 }}
+                animationDuration={1500}
               />
               <Line
                 type="monotone"
-                dataKey="pengunjung"
+                dataKey="belanja"
+                name="Belanja"
                 stroke="#EAB308"
                 strokeWidth={3}
                 dot={{ r: 5, fill: '#EAB308', strokeWidth: 2, stroke: '#fff' }}

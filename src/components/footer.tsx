@@ -1,4 +1,4 @@
-import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaInstagram, FaYoutube, FaFacebook, FaTwitter } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 function Footer({ siteSettings }) {
   const {
@@ -102,19 +102,22 @@ function Footer({ siteSettings }) {
           <div>
             <h4 className="font-bold mb-4 text-base md:text-lg">Navigasi</h4>
             <ul className="space-y-2 text-sm md:text-base">
-              <li><a href="#" className="hover:text-emerald-200 transition-colors">Profil</a></li>
-              <li><a href="/berita" className="hover:text-emerald-200 transition-colors">Infografis</a></li>
-              <li><a href="/e-survey" className="hover:text-emerald-200 transition-colors">IDM</a></li>
+              <li><Link to="/" className="hover:text-emerald-200 transition-colors">Home</Link></li>
+              <li><Link to="/profil" className="hover:text-emerald-200 transition-colors">Profil</Link></li>
+              <li><Link to="/idm" className="hover:text-emerald-200 transition-colors">IDM</Link></li>
+              <li><Link to="/listing" className="hover:text-emerald-200 transition-colors">Listing</Link></li>
             </ul>
           </div>
 
-          {/* Profile */}
+          {/* Layanan & Informasi */}
           <div>
-            <h4 className="font-bold mb-4 text-base md:text-lg">Navigasi</h4>
+            <h4 className="font-bold mb-4 text-base md:text-lg">Layanan & Informasi</h4>
             <ul className="space-y-2 text-sm md:text-base">
-              <li><a href="/belanja" className="hover:text-emerald-200 transition-colors">Belanja</a></li>
-              <li><a href="/berita" className="hover:text-emerald-200 transition-colors">Berita</a></li>
-              <li><a href="/galeri" className="hover:text-emerald-200 transition-colors">Galeri</a></li>
+              <li><Link to="/belanja" className="hover:text-emerald-200 transition-colors">Belanja</Link></li>
+              <li><Link to="/berita" className="hover:text-emerald-200 transition-colors">Berita</Link></li>
+              <li><Link to="/galeri" className="hover:text-emerald-200 transition-colors">Galeri</Link></li>
+              <li><Link to="/penduduk" className="hover:text-emerald-200 transition-colors">Kependudukan</Link></li>
+              <li><Link to="/pengaduan" className="hover:text-emerald-200 transition-colors">Pengaduan</Link></li>
             </ul>
           </div>
         </div>
@@ -124,22 +127,6 @@ function Footer({ siteSettings }) {
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 lg:gap-8">
             <div className="text-center text-sm md:text-base">
               © Copyright 2026 Pendekar Batam All Rights Reserved
-            </div>
-
-            {/* Social Media Icons */}
-            <div className="flex gap-4 md:gap-5 mr-10">
-              <a href={instagram} className="hover:text-emerald-200 transition-colors">
-                <FaInstagram className="text-2xl md:text-3xl" />
-              </a>
-              <a href={youtube} className="hover:text-emerald-200 transition-colors">
-                <FaYoutube className="text-2xl md:text-3xl" />
-              </a>
-              <a href={facebook} className="hover:text-emerald-200 transition-colors">
-                <FaFacebook className="text-2xl md:text-3xl" />
-              </a>
-              <a href={twitter} className="hover:text-emerald-200 transition-colors">
-                <FaTwitter className="text-2xl md:text-3xl" />
-              </a>
             </div>
           </div>
 

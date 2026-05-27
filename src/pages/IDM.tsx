@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react"
-import { Download } from "lucide-react"
 import Navbar from "../components/navbar"
 import Footer from "../components/footer"
 import { apiFetch } from "../api"
@@ -387,16 +386,7 @@ export default function IDM() {
             ))}
           </div>
 
-          <button
-            type="button"
-            className="mt-6 inline-flex items-center gap-3 rounded-2xl bg-[#298064] px-8 py-4 text-lg font-bold text-white shadow-[0_6px_20px_rgba(41,128,100,0.32)] transition hover:bg-[#216c54] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1d5f4a] focus-visible:ring-offset-2"
-            aria-label="Download IDM"
-          >
-            Download IDM
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[#298064]">
-              <Download size={16} aria-hidden="true" />
-            </span>
-          </button>
+
 
           <div className="mt-14">
             <h2 className="text-4xl font-bold text-[#298064]">Skor IDM tahun ke tahun</h2>

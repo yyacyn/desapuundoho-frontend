@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
@@ -13,6 +14,7 @@ export default function NewsDetailPage() {
 
   // Ambil data global
   const { articles, loading } = useNews();
+  const categories = useMemo(() => Array.from(new Set(articles.map((a) => a.category).filter(Boolean))), [articles]);
 
   // 1. Prioritaskan data dari state navigasi, jika tidak ada cari di global context
   const postFromState = location.state?.post;
@@ -152,13 +154,21 @@ export default function NewsDetailPage() {
                   Kategori
                 </h3>
 
-                <ul className="space-y-3 text-gray-600">
-                  <li className="border-b pb-2">Kemerdekaan</li>
-                  <li className="border-b pb-2">Event</li>
-                  <li className="border-b pb-2">Keagamaan</li>
-                  <li className="border-b pb-2">Pengumuman</li>
-                  <li>Kesehatan</li>
-                </ul>
+                {categories.length === 0 ? (
+                  <p className="text-sm text-gray-500">Tidak ada kategori</p>
+                ) : (
+                  <ul className="space-y-3 text-gray-600">
+                    {categories.map((cat, idx) => (
+                      <li
+                        key={cat}
+                        className={`cursor-pointer hover:text-emerald-700 transition-colors ${idx < categories.length - 1 ? 'border-b pb-2' : ''}`}
+                        onClick={() => navigate('/berita', { state: { category: cat } })}
+                      >
+                        {cat}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
               {/* Prev Next */}

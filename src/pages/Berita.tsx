@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Search, LayoutGrid, ChevronDown } from "lucide-react";
+import { useEffect, useState, useMemo } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Search, LayoutGrid, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import { apiFetch } from "../api";
@@ -85,44 +85,41 @@ export default function Berita() {
   const [sortDir, setSortDir] = useState('desc')
   const [visibleCount, setVisibleCount] = useState(3);
   const navigate = useNavigate();
-  // const fetchArticles = async () => {
-  //   try {
-  //     const res = await apiFetch('/articles')
-  //     const data = await res.json()
-  //     setArticles(data.articles || [])
-  //   } catch (err) {
-  //     console.error('Failed to fetch articles:', err)
-  //   } finally {
-  //     setLoading(false)
-  //   }
-  // }
+  const location = useLocation();
+  const [selectedCategory, setSelectedCategory] = useState("Semua");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const PAGE_SIZE = 6;
 
-  // useEffect(() => { fetchArticles() }, [])
+  useEffect(() => {
+    if (location.state?.category) {
+      setSelectedCategory(location.state.category);
+    }
+  }, [location.state]);
 
-  if (loading) return <div className="text-center py-20">Memuat Halaman Berita...</div>;
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedCategory]);
 
-  // Filter + search + sort (client-side on fetched data)
-  // const filtered = articles
-  //   .filter(a => filterStatus === 'all' || a.status === filterStatus)
-  //   .filter(a =>
-  //     a.title.toLowerCase().includes(search.toLowerCase()) ||
-  //     (a.excerpt || '').toLowerCase().includes(search.toLowerCase())
-  //   )
-  //   .sort((a, b) =>
-  //     sortDir === 'desc'
-  //       ? new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime()
-  //       : new Date(a.created_at ?? 0).getTime() - new Date(b.created_at ?? 0).getTime()
-  //   )
+  const categories = ["Semua", ...Array.from(new Set(articles.filter(a => a.status !== "draft").map(a => a.category).filter(Boolean)))];
 
+  // Popular section (overall latest/popular articles: filtered only by search and status)
+  const popularFiltered = articles.filter(a => {
+    const matchesSearch = a.title.toLowerCase().includes(search.toLowerCase());
+    const matchesStatus = a.status !== "draft";
+    return matchesSearch && matchesStatus;
+  });
 
-  // Filter pencarian
-  const filtered = articles.filter(a =>
-    a.title.toLowerCase().includes(search.toLowerCase())
-  );
+  const mainPost = popularFiltered[0]; // Section Popular
+  const sidePosts = popularFiltered.slice(1, 5); // 4 berita setelah yang utama
 
-  // const filteredPosts = dummyPosts.filter((post) =>
-  //   post.title.toLowerCase().includes(search.toLowerCase())
-  // );
+  // New Release section (filtered by search, status AND selectedCategory, showing ALL)
+  const newReleaseFiltered = articles.filter(a => {
+    const matchesSearch = a.title.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = selectedCategory === "Semua" || a.category === selectedCategory;
+    const matchesStatus = a.status !== "draft";
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
 
   const handlePostClick = (post: { id: number | string;[key: string]: unknown }) => {
     navigate(`/detail-berita/${post.id}`, { state: { post } });
@@ -135,10 +132,17 @@ export default function Berita() {
       year: "numeric",
     }) : "-");
 
-  // Logika Section Popular dan New Release
-  const mainPost = filtered[0];// Section Popular
-  const sidePosts = filtered.slice(1, 5); // 4 berita setelah yang utama
-  const newReleasePosts = filtered.slice(5); // Sisa berita lainnya
+  const totalPages = Math.max(1, Math.ceil(newReleaseFiltered.length / PAGE_SIZE));
+  const activePage = Math.min(currentPage, totalPages);
+
+  const pagedNewReleasePosts = useMemo<Article[]>(() => {
+    const start = (activePage - 1) * PAGE_SIZE;
+    return newReleaseFiltered.slice(start, start + PAGE_SIZE);
+  }, [activePage, newReleaseFiltered]);
+
+  const hasNoResults = popularFiltered.length === 0;
+
+  if (loading) return <div className="text-center py-20">Memuat Halaman Berita...</div>;
 
   // Section New Release (mulai dari post ke-6 biar ga double)
   // const newReleasePosts = filteredPosts.slice(5, 5 + visibleCount);
@@ -160,119 +164,207 @@ export default function Berita() {
         </div>
 
         {/* No results message */}
-        {filtered.length === 0 && (
+        {hasNoResults && (
           <div className="text-center py-20">
             <p className="text-gray-500 text-lg">Tidak ada berita yang ditemukan</p>
             <p className="text-gray-400 text-sm mt-2">Coba dengan kata kunci lainnya</p>
           </div>
         )}
 
-        {filtered.length > 0 && (
+        {!hasNoResults && (
           <>
             {/* Popular */}
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-[#298064]">Popular</h2>
-              <button className="flex items-center gap-3 bg-[#F1F3F4] px-4 py-2 rounded-2xl text-[#5F6368] font-medium transition-all hover:bg-gray-200">
-                <LayoutGrid size={20} />
-                <span className="text-base">Kategori</span>
-                <ChevronDown size={18} className="ml-1" />
-              </button>
-            </div>
+            {popularFiltered.length > 0 && (
+              <>
+                <div className="flex items-center justify-between mb-6 relative">
+                  <h2 className="text-2xl font-bold text-[#298064]">Popular</h2>
+                </div>
 
-            <div className="grid md:grid-cols-3 gap-6">
+                <div className="grid md:grid-cols-3 gap-6">
 
-              {/* Main Popular */}
-              {mainPost && (
-                <a
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handlePostClick(mainPost);
-                  }}
-                  className="bg-white rounded-xl shadow-[0_0_15px_rgba(0,0,0,0.1)] overflow-hidden md:col-span-1"
-                >
-                  <img
-                    src={mainPost.cover_image ?? "./assets/home/berita.jpg"}
-                    alt={mainPost.title}
-                    className="w-full h-80 object-cover"
-                  />
+                  {/* Main Popular */}
+                  {mainPost && (
+                    <a
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePostClick(mainPost);
+                      }}
+                      className="bg-white rounded-xl shadow-[0_0_15px_rgba(0,0,0,0.1)] overflow-hidden md:col-span-1 cursor-pointer"
+                    >
+                      <img
+                        src={mainPost.cover_image ?? "./assets/home/berita.jpg"}
+                        alt={mainPost.title}
+                        className="w-full h-80 object-cover"
+                      />
 
-                  <div className="p-4">
-                    <p className="text-xs text-gray-500 mb-1">Category</p>
+                      <div className="p-4">
+                        <p className="text-xs text-gray-500 mb-1">{mainPost.category ?? "Category"}</p>
 
-                    <h3 className="text-2xl font-bold text-[#298064] leading-snug">
-                      {mainPost.title}
-                    </h3>
+                        <h3 className="text-2xl font-bold text-[#298064] leading-snug">
+                          {mainPost.title}
+                        </h3>
 
-                    <p className="text-xs text-gray-400 text-end mt-20">{getArticleDate(mainPost)}</p>
+                        <p className="text-xs text-gray-400 text-end mt-20">{getArticleDate(mainPost)}</p>
+                      </div>
+                    </a>
+                  )}
+
+                  {/* Side Popular */}
+                  <div className="md:col-span-2 flex flex-col gap-4">
+                    {sidePosts.map((post) => (
+                      <a
+                        key={post.id}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handlePostClick(post);
+                        }}
+                        className="flex gap-4 shadow-[0_0_15px_rgba(0,0,0,0.1)] rounded-xl p-3 hover:shadow-md transition w-full cursor-pointer"
+                      >
+                        <img
+                          src={post.cover_image ?? "./assets/home/berita.jpg"}
+                          alt={post.title}
+                          className="w-28 h-23 rounded-lg object-cover flex-shrink-0"
+                        />
+
+                        <div>
+                          <p className="text-xs text-gray-500 pt-1">{post.category ?? "Category"}</p>
+
+                          <h4 className="text-lg font-semibold text-[#298064] leading-snug line-clamp-2">
+                            {post.title}
+                          </h4>
+
+                          <p className="text-xs text-gray-400 mt-1">
+                            {getArticleDate(post)}
+                          </p>
+                        </div>
+                      </a>
+                    ))}
                   </div>
-                </a>
-              )}
 
-              {/* Side Popular */}
-              <div className="md:col-span-2 gap-4">
-                {sidePosts.map((post) => (
-                  <a
-                    key={post.id}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handlePostClick(post);
-                    }}
-                    className="flex gap-4 shadow-[0_0_15px_rgba(0,0,0,0.1)] rounded-xl p-3 hover:shadow-md transition w-full"
-                  >
-                    <img
-                      src={post.cover_image ?? "./assets/home/berita.jpg"}
-                      alt={post.title}
-                      className="w-28 h-23 rounded-lg object-cover flex-shrink-0"
-                    />
-
-                    <div>
-                      <p className="text-xs text-gray-500 pt-1">{post.category ?? "Category"}</p>
-
-                      <h4 className="text-lg font-semibold text-[#298064] leading-snug line-clamp-2">
-                        {post.title}
-                      </h4>
-
-                      <p className="text-xs text-gray-400 mt-1">
-                        {getArticleDate(post)}
-                      </p>
-                    </div>
-                  </a>
-                ))}
-              </div>
-
-            </div>
-
+                </div>
+              </>
+            )}
 
             {/* New Release */}
-            <h2 className="text-2xl font-bold mt-12 mb-6">
-              <span className="text-[#298064]">New</span> Realease
-            </h2>
+            <div className="flex items-center justify-between mt-12 mb-6 relative">
+              <h2 className="text-2xl font-bold">
+                <span className="text-[#298064]">New</span> Release
+              </h2>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center gap-3 bg-[#F1F3F4] px-4 py-2 rounded-2xl text-[#5F6368] font-medium transition-all hover:bg-gray-200"
+                >
+                  <LayoutGrid size={20} />
+                  <span className="text-base">{selectedCategory === "Semua" ? "Kategori" : selectedCategory}</span>
+                  <ChevronDown size={18} className={`ml-1 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-50 py-1">
+                    {categories.map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => {
+                          setSelectedCategory(cat);
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#298064] hover:text-white transition-colors ${
+                          selectedCategory === cat ? 'bg-[#298064]/10 font-bold text-[#298064]' : ''
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
 
-            {newReleasePosts.map((post) => (
-              <a
-                key={post.id}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handlePostClick(post);
-                }}
-                className="flex flex-col md:flex-row gap-4 md:gap-6 shadow-[0_0_15px_rgba(0,0,0,0.1)] rounded-xl p-4 hover:shadow-md transition mb-6"
-              >
-                <img
-                  src={post.cover_image ?? "./assets/home/berita.jpg"}
-                  alt={post.title}
-                  className="w-full md:w-60 h-48 md:h-32 object-cover rounded-lg flex-shrink-0"
-                />
-                <div>
-                  <p className="text-xs text-gray-500 pt-1">Category</p>
+            {newReleaseFiltered.length === 0 ? (
+              <div className="text-center py-10 text-gray-500">
+                Tidak ada berita untuk kategori ini.
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 items-stretch">
+                  {pagedNewReleasePosts.map((post) => (
+                    <article
+                      key={post.id}
+                      className="flex flex-col justify-between h-full bg-white p-5 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all cursor-pointer"
+                      onClick={() => handlePostClick(post)}
+                    >
+                      <div className="w-full text-left flex flex-col flex-grow">
+                        <div className="rounded-xl border border-gray-100 bg-[#f9f9f9] flex items-center justify-center w-full aspect-[16/10] overflow-hidden">
+                          <img
+                            src={post.cover_image || "./assets/home/berita.jpg"}
+                            alt={post.title}
+                            className="h-full w-full object-cover hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
 
-                  <h3 className="text-[#298064] font-semibold leading-snug text-lg">
-                    {post.title}
-                  </h3>
+                        <p className="text-xs text-[#298064] font-semibold mt-4">
+                          {post.category ?? "Kategori"}
+                        </p>
 
-                  <p className="text-xs text-gray-400 mt-2">{getArticleDate(post)}</p>
+                        <h3 className="mt-2 line-clamp-2 text-lg font-bold leading-snug text-black hover:text-[#298064] transition-colors">
+                          {post.title}
+                        </h3>
+                      </div>
+
+                      <p className="mt-4 text-xs text-gray-400 font-medium">
+                        {getArticleDate(post)}
+                      </p>
+                    </article>
+                  ))}
                 </div>
-              </a>
-            ))}
+
+                {totalPages > 1 && (
+                  <nav className="mt-12 flex items-center justify-center gap-2" aria-label="Pagination berita">
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage(activePage - 1)}
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 text-[#298064] transition hover:bg-gray-100 disabled:opacity-50"
+                      disabled={activePage === 1}
+                      aria-label="Halaman sebelumnya"
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => {
+                      const isActive = pageNumber === activePage
+
+                      return (
+                        <button
+                          key={pageNumber}
+                          type="button"
+                          onClick={() => setCurrentPage(pageNumber)}
+                          aria-current={isActive ? "page" : undefined}
+                          className={`inline-flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold transition ${
+                            isActive
+                              ? "bg-[#298064] text-white"
+                              : "text-[#298064] hover:bg-gray-100 border border-gray-200"
+                          }`}
+                        >
+                          {pageNumber}
+                        </button>
+                      )
+                    })}
+
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage(activePage + 1)}
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 text-[#298064] transition hover:bg-gray-100 disabled:opacity-50"
+                      disabled={activePage === totalPages}
+                      aria-label="Halaman berikutnya"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </nav>
+                )}
+              </>
+            )}
           </>
         )}
 

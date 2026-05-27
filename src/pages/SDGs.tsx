@@ -96,7 +96,7 @@ export default function SDGs() {
       <section className="bg-white py-12 px-4 md:px-28 w-full mx-auto pt-28 md:pt-30">
         <div className="flex justify-center mb-8 md:mb-10">
           <img
-            src="/assets/sgds/sgds illust.png"
+            src="/assets/sgds/sgds-illust.png?v=1"
             alt="Ilustrasi SDGs"
             className="mx-auto h-auto object-contain max-w-xl md:max-w-2xl px-15 md:px-0"
           />
@@ -117,7 +117,7 @@ export default function SDGs() {
 
             <div className="bg-white rounded-xl shadow-[0_0_15px_rgba(0,0,0,0.1)] p-5 md:p-6 max-w-xl">
               <div className="flex items-center justify-between gap-4">
-                <p className="text-2xl md:text-3xl font-medium text-[#298064] leading-tight">Skor SDGs Desa Puundaho</p>
+                <p className="text-2xl md:text-3xl font-medium text-[#298064] leading-tight">Skor SDGs Desa Puunduho</p>
                 <p className="text-4xl md:text-5xl font-bold text-[#298064] leading-none">{loading ? "..." : averageScore}</p>
               </div>
             </div>
@@ -125,7 +125,7 @@ export default function SDGs() {
 
           <div className="flex justify-center lg:justify-end">
             <img
-              src="/assets/sgds/stats illust.png"
+              src="/assets/sgds/stats-illust.png?v=1"
               alt="Ilustrasi Statistik SDGs"
               className="mx-auto w-auto h-auto object-contain max-w-[260px] md:max-w-[340px] lg:max-w-[420px] max-h-[180px] md:max-h-[240px] lg:max-h-[280px]"
             />
@@ -154,7 +154,7 @@ export default function SDGs() {
                   <div className="flex items-end justify-between gap-4 mt-4">
                     <div className="w-12 h-12 rounded-sm overflow-hidden flex items-center justify-center">
                       <img
-                        src={`/assets/sgds/sgds${item.id}.png`}
+                        src={`/assets/sgds/sgds${item.id}.png?v=1`}
                         alt={`Logo SDGs ${item.id}`}
                         className="w-full h-full object-contain"
                       />

@@ -17,6 +17,10 @@ import { FaOm, FaDharmachakra, FaToriiGate } from "react-icons/fa"
 import Navbar from "../components/navbar"
 import Footer from "../components/footer"
 import { apiFetch } from "../api"
+import { MapContainer, TileLayer, GeoJSON, useMap } from "react-leaflet"
+import L from "leaflet"
+import "leaflet/dist/leaflet.css"
+import geojsonData from "../assets/batas-desa.json"
 
 interface DemografiCard {
     label: string
@@ -383,18 +387,62 @@ function CollapseItem({
     )
 }
 
+function BaseVillageBoundary() {
+    const map = useMap()
+
+    useEffect(() => {
+        try {
+            const layer = L.geoJSON(geojsonData as any)
+            map.fitBounds(layer.getBounds())
+        } catch (e) {
+            console.error(e)
+        }
+    }, [map])
+
+    return (
+        <GeoJSON
+            data={geojsonData as any}
+            style={{
+                color: "#EAB308", // Yellow
+                weight: 4,
+                opacity: 0.8,
+                fillOpacity: 0.05,
+                dashArray: "5, 10",
+            }}
+            interactive={false}
+        />
+    )
+}
+
 export default function Penduduk() {
     const [openMale, setOpenMale] = useState(false)
     const [openFemale, setOpenFemale] = useState(false)
     const [hoveredDusun, setHoveredDusun] = useState<string | null>(null)
     const [hoveredPendidikan, setHoveredPendidikan] = useState<PendidikanHoverState | null>(null)
     const [hoveredWajibPilih, setHoveredWajibPilih] = useState<PendidikanHoverState | null>(null)
-    const [records, setRecords] = useState<PendudukRecord[]>([])
+    const [statsData, setStatsData] = useState<any>(null)
     const [datasets, setDatasets] = useState<DatasetInfo[]>([])
     const [selectedDatasetId, setSelectedDatasetId] = useState<number | null>(null)
     const [datasetYear, setDatasetYear] = useState<number | null>(null)
     const [loading, setLoading] = useState(true)
     const [errorMessage, setErrorMessage] = useState("")
+    const [dusunBoundaries, setDusunBoundaries] = useState<any[]>([])
+
+    // Fetch dusun boundaries on mount
+    useEffect(() => {
+        const fetchDusunBoundaries = async () => {
+            try {
+                const res = await apiFetch("/dusun")
+                if (res.ok) {
+                    const data = await res.json()
+                    setDusunBoundaries(Array.isArray(data.dusun) ? data.dusun : [])
+                }
+            } catch (err) {
+                console.error("Failed to fetch dusun boundaries:", err)
+            }
+        }
+        fetchDusunBoundaries()
+    }, [])
 
     // Fetch datasets list on mount
     useEffect(() => {
@@ -430,7 +478,7 @@ export default function Penduduk() {
         fetchDatasetsList()
     }, [])
 
-    // Fetch records when selectedDatasetId changes
+    // Fetch stats when selectedDatasetId changes
     useEffect(() => {
         if (!selectedDatasetId) return
 
@@ -438,21 +486,21 @@ export default function Penduduk() {
             setLoading(true)
             setErrorMessage("")
             try {
-                const recordsRes = await apiFetch(`/penduduk/datasets/${selectedDatasetId}/records`)
-                if (!recordsRes.ok) {
+                const statsRes = await apiFetch(`/penduduk/datasets/${selectedDatasetId}/stats`)
+                if (!statsRes.ok) {
                     throw new Error("Gagal memuat data penduduk")
                 }
 
-                const recordsJson = await recordsRes.json()
-                setRecords(Array.isArray(recordsJson?.penduduk) ? recordsJson.penduduk : [])
-                
+                const statsJson = await statsRes.json()
+                setStatsData(statsJson)
+
                 // Keep the dataset year in sync
                 const currentDs = datasets.find(d => d.id === selectedDatasetId)
                 if (currentDs) {
                     setDatasetYear(Number(currentDs.tahun || 0) || null)
                 }
             } catch (error) {
-                setRecords([])
+                setStatsData(null)
                 setErrorMessage(error instanceof Error ? error.message : "Terjadi kesalahan saat memuat data penduduk")
             } finally {
                 setLoading(false)
@@ -463,26 +511,8 @@ export default function Penduduk() {
     }, [selectedDatasetId, datasets])
 
     const ageGroupData = useMemo<AgeGroupData[]>(() => {
-        const buckets = AGE_BUCKETS.map((usia) => ({ usia, lakiLaki: 0, perempuan: 0 }))
-
-        records.forEach((record) => {
-            const age = calculateAgeAtYear(record.tanggal_lahir, new Date().getFullYear())
-            if (age === null) return
-
-            const bucket = getAgeBucket(age)
-            const target = buckets.find((item) => item.usia === bucket)
-            if (!target) return
-
-            const gender = normalizeGender(record.jenis_kelamin)
-            if (gender === "Laki-Laki") {
-                target.lakiLaki += 1
-            } else if (gender === "Perempuan") {
-                target.perempuan += 1
-            }
-        })
-
-        return buckets
-    }, [records])
+        return statsData?.age_pyramid ?? []
+    }, [statsData])
 
     const agePyramidData = useMemo(
         () =>
@@ -496,55 +526,62 @@ export default function Penduduk() {
     )
 
     const demografiCards = useMemo<DemografiCard[]>(() => {
-        const totalPenduduk = records.length
-        const uniqueFamilyHeads = new Set(records.map((record) => normalizeText(record.no_kk || record.nik || record.id))).size
-        const perempuan = records.filter((record) => normalizeGender(record.jenis_kelamin) === "Perempuan").length
-        const lakiLaki = records.filter((record) => normalizeGender(record.jenis_kelamin) === "Laki-Laki").length
+        const total = statsData?.total_penduduk ?? 0
+        const kk = statsData?.kepala_keluarga ?? 0
+        const perempuan = statsData?.perempuan ?? 0
+        const lakiLaki = statsData?.laki_laki ?? 0
 
         return [
-            { label: "Total Penduduk", value: totalPenduduk, icon: <Users size={58} strokeWidth={1.9} aria-hidden="true" /> },
-            { label: "Kepala Keluarga", value: uniqueFamilyHeads, icon: <Home size={58} strokeWidth={1.9} aria-hidden="true" /> },
+            { label: "Total Penduduk", value: total, icon: <Users size={58} strokeWidth={1.9} aria-hidden="true" /> },
+            { label: "Kepala Keluarga", value: kk, icon: <Home size={58} strokeWidth={1.9} aria-hidden="true" /> },
             { label: "Perempuan", value: perempuan, icon: <Venus size={58} strokeWidth={1.9} aria-hidden="true" /> },
             { label: "Laki-Laki", value: lakiLaki, icon: <Mars size={58} strokeWidth={1.9} aria-hidden="true" /> },
         ]
-    }, [records])
+    }, [statsData])
 
     const dusunData = useMemo<DusunData[]>(() => {
-        const counts: Record<string, number> = {
-            Riorita: 0,
-            Sipatokkong: 0,
-            Sipakainge: 0,
-            Pakkarauew: 0,
-        }
-
-        records.forEach((record) => {
-            const dusun = normalizeDusun(record.alamat)
-            if (dusun in counts) {
-                counts[dusun] += 1
+        const backendDusunList = statsData?.dusun_list ?? []
+        return dusunBoundaries.map((d) => {
+            const match = backendDusunList.find((b: any) => normalizeText(b.name).includes(normalizeText(d.nama_dusun)))
+            return {
+                name: d.nama_dusun,
+                population: match ? match.population : 0,
+                color: d.warna,
+                colorName: d.warna,
+                polygonPoints: "",
+                labelX: 0,
+                labelY: 0,
             }
-        })
+        }).concat(
+            backendDusunList.filter((b: any) => !dusunBoundaries.some(d => normalizeText(b.name).includes(normalizeText(d.nama_dusun))) && b.population > 0).map((b: any) => ({
+                name: b.name,
+                population: b.population,
+                color: "#6b7280",
+                colorName: "gray",
+                polygonPoints: "",
+                labelX: 0,
+                labelY: 0,
+            }))
+        )
+    }, [statsData, dusunBoundaries])
 
-        return DUSUN_TEMPLATE.map((dusun) => ({
-            ...dusun,
-            population: counts[dusun.name] || 0,
-        }))
-    }, [records])
-
-    const pendidikanData = useMemo<EducationData[]>(() => getBucketCount(records, (record) => normalizeEducation(record.pend_terakhir), EDUCATION_BUCKETS), [records])
+    const pendidikanData = useMemo<EducationData[]>(() => {
+        return statsData?.pendidikan ?? []
+    }, [statsData])
 
     const pekerjaanData = useMemo<JobData[]>(
         () =>
-            getBucketCount(records, (record) => normalizeJob(record.pekerjaan), JOB_BUCKETS).map((item, index) => ({
+            (statsData?.pekerjaan ?? []).map((item: any, index: number) => ({
                 name: item.name,
                 value: item.value,
                 color: ["#6378E5", "#69C68A", "#F7A945", "#1FBEE2", "#8E77E8", "#D97706", "#14B8A6", "#EF4444", "#6B7280", "#84CC16", "#F97316", "#0EA5E9", "#A855F7"][index % 13],
             })),
-        [records]
+        [statsData]
     )
 
     const agamaData = useMemo<ReligionData[]>(
         () =>
-            getBucketCount(records, (record) => normalizeReligion(record.agama), RELIGION_BUCKETS).map((item) => ({
+            (statsData?.agama ?? []).map((item: any) => ({
                 name: item.name,
                 value: formatNumber(item.value),
                 icon:
@@ -556,22 +593,16 @@ export default function Penduduk() {
                                         item.name === "Konghucu" ? <FaToriiGate size={34} aria-hidden="true" /> :
                                             <Users size={34} aria-hidden="true" />,
             })),
-        [records]
+        [statsData]
     )
 
     const wajibPilihData = useMemo<WajibPilihData[]>(() => {
-        const currentYear = new Date().getFullYear()
-        const forecastYears = [currentYear, currentYear + 1, currentYear + 5]
-
-        return forecastYears.map((year, index) => ({
-            year: String(year),
-            value: records.filter((record) => {
-                const age = calculateAgeAtYear(record.tanggal_lahir, year)
-                return age !== null && age >= 17
-            }).length,
-            color: index === forecastYears.length - 1 ? "#39b38a" : "#2f8a6b",
+        return (statsData?.wajib_pilih ?? []).map((item: any, index: number) => ({
+            year: item.year,
+            value: item.value,
+            color: index === (statsData?.wajib_pilih?.length ?? 0) - 1 ? "#39b38a" : "#2f8a6b",
         }))
-    }, [records])
+    }, [statsData])
 
     const maxPyramidValue = useMemo(() => {
         const values = ageGroupData.flatMap((item) => [item.lakiLaki, item.perempuan])
@@ -712,82 +743,51 @@ export default function Penduduk() {
                         <SectionTitle title="Berdasarkan Dusun" />
                         <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
                             <div
-                                className="relative overflow-hidden rounded-2xl border border-gray-300 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.08)]"
+                                className="relative overflow-hidden rounded-2xl border border-gray-300 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.08)] h-[420px]"
                                 role="img"
                                 aria-label="Peta interaktif sebaran penduduk berdasarkan dusun"
                             >
-                                <svg viewBox="0 0 860 560" className="h-[420px] w-full bg-[#f6f4ed]">
-                                    <rect x="0" y="0" width="860" height="560" fill="#f6f4ed" />
-
-                                    <g opacity="0.65">
-                                        <path d="M70 40 L180 95 L240 150 L305 190 L345 260 L360 335 L330 430 L250 515" stroke="#d6d3ca" strokeWidth="3" fill="none" />
-                                        <path d="M210 35 L250 75 L295 110 L365 135 L430 165 L505 175 L585 210 L670 265 L745 350" stroke="#d6d3ca" strokeWidth="3" fill="none" />
-                                        <path d="M85 265 L160 255 L245 258 L330 273 L410 302 L520 332 L650 344 L790 338" stroke="#d6d3ca" strokeWidth="3" fill="none" />
-                                        <path d="M150 450 L220 410 L305 392 L390 396 L470 425 L555 470 L640 505" stroke="#d6d3ca" strokeWidth="3" fill="none" />
-                                    </g>
-
-                                    <g opacity="0.95">
-                                        <path d="M30 210 C120 230, 210 250, 290 235 C365 220, 430 175, 495 205 C560 236, 605 322, 690 342 C750 357, 805 338, 845 322" stroke="#9cc3f4" strokeWidth="3" fill="none" />
-                                        <path d="M335 160 C315 190, 315 222, 350 244 C380 262, 430 254, 452 230" stroke="#a5cdf8" strokeWidth="2.5" fill="none" />
-                                        <path d="M460 250 C430 275, 424 306, 450 332 C478 355, 525 360, 570 350" stroke="#a5cdf8" strokeWidth="2.5" fill="none" />
-                                    </g>
-
-                                    <defs>
-                                        <clipPath id="puundohoBoundary">
-                                            <path d="M210 90 L340 120 L460 155 L620 190 L700 265 L670 360 L610 430 L560 480 L470 500 L420 470 L360 490 L305 460 L250 470 L190 430 L175 360 L140 320 L150 240 L170 190 L200 160 Z" />
-                                        </clipPath>
-                                    </defs>
-
-                                    <g clipPath="url(#puundohoBoundary)">
-                                        <rect x="130" y="80" width="590" height="430" fill="#f0efe8" />
-
-                                        {dusunData.map((dusun) => {
-                                            const isHovered = hoveredDusun === dusun.name
+                                <MapContainer
+                                    center={[-3.1, 121.08]}
+                                    zoom={14}
+                                    scrollWheelZoom={false}
+                                    style={{ height: "100%", width: "100%" }}
+                                    className="z-0"
+                                >
+                                    <TileLayer
+                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                    />
+                                    <BaseVillageBoundary />
+                                    {dusunBoundaries.map((d) => {
+                                        if (!d.geojson_data) return null
+                                        try {
+                                            const geom = JSON.parse(d.geojson_data)
+                                            const isHovered = hoveredDusun === d.nama_dusun
                                             return (
-                                                <polygon
-                                                    key={`zone-${dusun.name}`}
-                                                    points={dusun.polygonPoints}
-                                                    fill={dusun.color}
-                                                    stroke={isHovered ? "#0f172a" : "#ffffff"}
-                                                    strokeWidth={isHovered ? 2.6 : 1.4}
-                                                    fillOpacity={isHovered ? 0.84 : 0.7}
-                                                    className="cursor-pointer transition-all duration-150 focus-visible:outline-none"
-                                                    tabIndex={0}
-                                                    role="button"
-                                                    aria-label={`${dusun.name} ${formatNumber(dusun.population)} penduduk`}
-                                                    onMouseEnter={() => setHoveredDusun(dusun.name)}
-                                                    onMouseLeave={() => setHoveredDusun(null)}
-                                                    onFocus={() => setHoveredDusun(dusun.name)}
-                                                    onBlur={() => setHoveredDusun(null)}
+                                                <GeoJSON
+                                                    key={d.id}
+                                                    data={geom}
+                                                    style={{
+                                                        color: d.warna,
+                                                        fillColor: d.warna,
+                                                        fillOpacity: isHovered ? 0.6 : 0.3,
+                                                        weight: isHovered ? 3 : 1.5,
+                                                    }}
+                                                    eventHandlers={{
+                                                        mouseover: () => setHoveredDusun(d.nama_dusun),
+                                                        mouseout: () => setHoveredDusun(null),
+                                                    }}
                                                 />
                                             )
-                                        })}
-                                    </g>
-
-                                    <path d="M210 90 L340 120 L460 155 L620 190 L700 265 L670 360 L610 430 L560 480 L470 500 L420 470 L360 490 L305 460 L250 470 L190 430 L175 360 L140 320 L150 240 L170 190 L200 160 Z" fill="none" stroke="#8f8b82" strokeWidth="1.7" />
-
-                                    {dusunData.map((dusun) => {
-                                        const isHovered = hoveredDusun === dusun.name
-                                        return (
-                                            <g key={dusun.name}>
-                                                <text
-                                                    x={dusun.labelX}
-                                                    y={dusun.labelY}
-                                                    textAnchor="middle"
-                                                    fill="#1f2937"
-                                                    fontSize="14"
-                                                    fontWeight="600"
-                                                    opacity={isHovered ? 1 : 0.9}
-                                                >
-                                                    {dusun.name}
-                                                </text>
-                                            </g>
-                                        )
+                                        } catch (e) {
+                                            return null
+                                        }
                                     })}
-                                </svg>
+                                </MapContainer>
 
                                 {hoveredDusun && (
-                                    <div className="pointer-events-none absolute right-4 top-14 rounded-md bg-[#1f2937] px-3 py-2 text-xs text-white shadow-lg">
+                                    <div className="pointer-events-none absolute right-4 top-14 rounded-md bg-[#1f2937] px-3 py-2 text-xs text-white shadow-lg z-[1000]">
                                         <p className="text-xs font-semibold">{hoveredDusun}</p>
                                         <p>{formatNumber(dusunData.find((item) => item.name === hoveredDusun)?.population ?? 0)} Penduduk</p>
                                     </div>
@@ -801,7 +801,7 @@ export default function Penduduk() {
                                         <li key={dusun.name} className="flex items-center gap-3">
                                             <span className="h-8 w-8 rounded-sm" style={{ backgroundColor: dusun.color }} aria-hidden="true" />
                                             <span className="text-sm text-gray-700">
-                                                {dusun.name} - {formatNumber(dusun.population)} Penduduk ({dusun.colorName})
+                                                {dusun.name} - {formatNumber(dusun.population)} Penduduk
                                             </span>
                                         </li>
                                     ))}

@@ -4,7 +4,7 @@ import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import { useState, type ChangeEvent, type DragEvent, type FormEvent } from "react";
 import { ChevronDown } from "lucide-react";
-import { RiFileTextLine } from "react-icons/ri";
+import { RiFileTextLine, RiHeadphoneLine, RiFilePaper2Line } from "react-icons/ri";
 import { apiFetch, uploadToImageKit } from "../api";
 
 const MAX_LENGTHS = {
@@ -181,6 +181,8 @@ export default function PengaduanPage() {
 
   const validateForm = () => {
     const nextErrors: Record<string, string> = {}
+    const isPengaduan = form.jenis === "pengaduan"
+    const term = isPengaduan ? "pengaduan" : "permohonan"
 
     if (!form.anonim) {
       if (!form.nama.trim()) nextErrors.nama = `Nama wajib diisi (1-${MAX_LENGTHS.nama} karakter).`
@@ -196,19 +198,26 @@ export default function PengaduanPage() {
       else if (form.email.trim().length > MAX_LENGTHS.email) nextErrors.email = `Email maksimal ${MAX_LENGTHS.email} karakter.`
     }
 
-    if (!form.judul.trim()) nextErrors.judul = `Judul wajib diisi (1-${MAX_LENGTHS.judul} karakter).`
-    else if (form.judul.trim().length > MAX_LENGTHS.judul) nextErrors.judul = `Judul maksimal ${MAX_LENGTHS.judul} karakter.`
+    if (!form.judul.trim()) nextErrors.judul = `Judul ${term} wajib diisi (1-${MAX_LENGTHS.judul} karakter).`
+    else if (form.judul.trim().length > MAX_LENGTHS.judul) nextErrors.judul = `Judul ${term} maksimal ${MAX_LENGTHS.judul} karakter.`
 
-    if (!form.isi.trim()) nextErrors.isi = `Isi wajib diisi (1-${MAX_LENGTHS.isi} karakter).`
-    else if (form.isi.trim().length > MAX_LENGTHS.isi) nextErrors.isi = `Isi maksimal ${MAX_LENGTHS.isi} karakter.`
+    if (!form.isi.trim()) nextErrors.isi = `Isi detail ${term} wajib diisi (1-${MAX_LENGTHS.isi} karakter).`
+    else if (form.isi.trim().length > MAX_LENGTHS.isi) nextErrors.isi = `Isi detail ${term} maksimal ${MAX_LENGTHS.isi} karakter.`
 
-    if (!form.tanggal) nextErrors.tanggal = 'Tanggal harus dipilih.'
+    if (!form.tanggal) {
+      nextErrors.tanggal = isPengaduan ? 'Tanggal kejadian harus dipilih.' : 'Tanggal kebutuhan surat harus dipilih.'
+    }
 
-    if (!form.lokasi.trim()) nextErrors.lokasi = `Lokasi wajib diisi (1-${MAX_LENGTHS.lokasi} karakter).`
-    else if (form.lokasi.trim().length > MAX_LENGTHS.lokasi) nextErrors.lokasi = `Lokasi maksimal ${MAX_LENGTHS.lokasi} karakter.`
+    if (!form.lokasi.trim()) {
+      nextErrors.lokasi = isPengaduan ? `Lokasi kejadian wajib diisi.` : `Lokasi / Alamat pemohon wajib diisi.`
+    } else if (form.lokasi.trim().length > MAX_LENGTHS.lokasi) {
+      nextErrors.lokasi = `Lokasi maksimal ${MAX_LENGTHS.lokasi} karakter.`
+    }
 
     if (!file) {
-      nextErrors.file = 'File wajib diupload.'
+      if (isPengaduan) {
+        nextErrors.file = 'Foto/dokumen bukti kejadian wajib diupload.'
+      }
     } else {
       const fileTypeValid = ALLOWED_FILE_TYPES.includes(file.type)
       const fileExtValid = ALLOWED_FILE_EXTS.includes(getFileExtension(file.name))
@@ -246,7 +255,7 @@ export default function PengaduanPage() {
         ? {
           judul: form.judul,
           isi: form.isi,
-          dokumen_url: fotoUrl,
+          dokumen_url: fotoUrl || "0",
           kategori: form.kategori,
           nama: form.anonim ? "Anonim" : form.nama,
           nomor_telp: form.anonim ? "" : form.nomor_telp,
@@ -277,9 +286,9 @@ export default function PengaduanPage() {
         throw new Error(err.error || "Gagal mengirim laporan");
       }
 
-      setSuccessMessage("Laporan berhasil dikirim!");
+      setSuccessMessage(isPengajuan ? "Permohonan berhasil dikirim!" : "Laporan pengaduan berhasil dikirim!");
       setForm({
-        jenis: "pengaduan",
+        jenis: isPengajuan ? "permohonan" : "pengaduan",
         nama: "",
         nomor_telp: "",
         email: "",
@@ -310,10 +319,10 @@ export default function PengaduanPage() {
         {/* HERO */}
         <div className="bg-gradient-to-r from-[#298064] to-[#4de8b7] text-white text-center py-16 px-4 pt-28 md:pt-20">
           <h1 className="text-2xl md:text-4xl font-bold mb-3">
-            Layanan Aspirasi dan Pengaduan Desa
+            Layanan Aspirasi, Pengaduan, dan Permohonan Desa
           </h1>
           <p className="text-sm md:text-base opacity-90">
-            Sampaikan laporan Anda langsung kepada pemerintah desa
+            Sampaikan pengaduan atau ajukan permohonan surat/layanan Anda secara langsung
           </p>
           <div className="w-16 h-1 bg-white mx-auto mt-4 rounded" />
         </div>
@@ -325,11 +334,11 @@ export default function PengaduanPage() {
             noValidate
             className="bg-white rounded-xl shadow-lg p-6 space-y-5"
           >
-            <h2 className="bg-[#298064] text-white px-4 py-2 rounded-md font-semibold">
-              Sampaikan Laporan Anda
+            <h2 className="bg-[#298064] text-white px-4 py-2 rounded-md font-semibold text-center md:text-left">
+              {form.jenis === "pengaduan" ? "Formulir Pengaduan / Aspirasi Warga" : "Formulir Permohonan Surat / Layanan Desa"}
             </h2>
 
-            {/* ERROR SUMMARY (appears above the form fields) */}
+            {/* ERROR SUMMARY */}
             {Object.keys(formErrors).length > 0 && (
               <div className="border border-red-500 bg-red-50 text-red-700 px-4 py-3 rounded mb-2">
                 <p className="font-medium">Mohon perbaiki kesalahan berikut:</p>
@@ -340,18 +349,19 @@ export default function PengaduanPage() {
                 </ul>
               </div>
             )}
+
             {/* JENIS */}
             <div>
-              <p className="text-sm font-medium mb-2">
-                Pilih Jenis Laporan
+              <p className="text-sm font-semibold mb-2 text-gray-700">
+                Pilih Jenis Layanan
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {["pengaduan", "permohonan"].map((item) => (
                   <label
                     key={item}
-                    className={`border rounded-lg p-2 text-center cursor-pointer ${form.jenis === item
-                      ? "border-[#298064] bg-[#29806426]"
-                      : "border-gray-300"
+                    className={`border rounded-lg p-3 text-center cursor-pointer font-bold text-sm transition-all flex items-center justify-center gap-2 ${form.jenis === item
+                      ? "border-[#298064] bg-[#2980641a] text-[#298064] ring-2 ring-[#298064]"
+                      : "border-gray-200 text-gray-600 bg-gray-50 hover:bg-gray-100"
                       }`}
                   >
                     <input
@@ -362,7 +372,17 @@ export default function PengaduanPage() {
                       onChange={handleChange}
                       className="hidden"
                     />
-                    {item.toUpperCase()}
+                    {item === "pengaduan" ? (
+                      <>
+                        <RiHeadphoneLine size={18} />
+                        <span>Pengaduan & Aspirasi</span>
+                      </>
+                    ) : (
+                      <>
+                        <RiFilePaper2Line size={18} />
+                        <span>Permohonan Surat/Layanan</span>
+                      </>
+                    )}
                   </label>
                 ))}
               </div>
@@ -407,7 +427,7 @@ export default function PengaduanPage() {
               </div>
             )}
 
-            <label className="flex text-gray-500 items-center gap-2 text-sm">
+            <label className="flex text-gray-500 items-center gap-2 text-sm cursor-pointer select-none">
               <input
                 type="checkbox"
                 name="anonim"
@@ -424,157 +444,192 @@ export default function PengaduanPage() {
                   setFormErrors({});
                   setError("");
                 }}
+                className="rounded border-gray-300 text-[#298064] focus:ring-[#298064] h-4 w-4"
               />
-              Apakah Anda ingin melaporkan secara anonim?
+              {form.jenis === "pengaduan" 
+                ? "Kirim pengaduan secara anonim (identitas Anda disembunyikan)" 
+                : "Kirim permohonan secara anonim (identitas Anda disembunyikan)"}
             </label>
 
             {/* JUDUL */}
-            <input
-              type="text"
-              name="judul"
-              placeholder="Judul laporan *"
-              value={form.judul}
-              onChange={handleChange}
-              className={`w-full border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 ${formErrors.judul ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-[#298064]'}`}
-              required
-              maxLength={255}
-            />
-
-            {/* ISI */}
-            <textarea
-              name="isi"
-              placeholder="Isi laporan Anda *"
-              value={form.isi}
-              onChange={handleChange}
-              rows={5}
-              className={`w-full border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 ${formErrors.isi ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-[#298064]'}`}
-              required
-              maxLength={10000}
-            />
-
-            {/* TANGGAL & LOKASI */}
-            <div className="grid md:grid-cols-2 gap-4 ">
-              <input
-                type="date"
-                name="tanggal"
-                value={form.tanggal}
-                onChange={handleChange}
-                className={`border rounded-lg p-3 text-sm ${formErrors.tanggal ? 'border-red-500' : 'border-gray-300'}`}
-                required
-              />
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-gray-600 px-1">
+                {form.jenis === "pengaduan" ? "Judul Pengaduan / Aspirasi *" : "Judul Permohonan / Layanan *"}
+              </label>
               <input
                 type="text"
-                name="lokasi"
-                placeholder="Lokasi kejadian *"
-                value={form.lokasi}
+                name="judul"
+                placeholder={form.jenis === "pengaduan" ? "Tuliskan judul laporan pengaduan Anda..." : "Tuliskan judul permohonan surat/layanan..."}
+                value={form.judul}
                 onChange={handleChange}
-                className={`border rounded-lg p-3 text-sm ${formErrors.lokasi ? 'border-red-500' : 'border-gray-300'}`}
+                className={`w-full border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 ${formErrors.judul ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-[#298064]'}`}
                 required
                 maxLength={255}
               />
             </div>
 
-            {/* KATEGORI */}
-            <div className="relative">
-              <select
-                name="kategori"
-                value={form.kategori}
+            {/* ISI */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-gray-600 px-1">
+                {form.jenis === "pengaduan" ? "Detail Pengaduan / Aspirasi *" : "Detail Keperluan Permohonan *" }
+              </label>
+              <textarea
+                name="isi"
+                placeholder={form.jenis === "pengaduan" 
+                  ? "Tuliskan laporan pengaduan Anda secara lengkap, kronologi, serta rincian kejadian..." 
+                  : "Tuliskan detail permohonan Anda (misal: keperluan pembuatan surat, nama instansi tujuan, dll)..."}
+                value={form.isi}
                 onChange={handleChange}
-                className={`w-full border rounded-lg px-3 py-3 pr-10 text-sm appearance-none bg-white focus:outline-none focus:ring-2 ${formErrors.kategori ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-[#298064]'}`}
-              >
-                <option value="">Pilih Kategori</option>
-                {form.jenis === "pengaduan" ? (
-                  <>
-                    <option value="infrastruktur">Infrastruktur</option>
-                    <option value="kesehatan">Kesehatan</option>
-                    <option value="layanan">Layanan</option>
-                    <option value="lingkungan">Lingkungan</option>
-                    <option value="pendidikan">Pendidikan</option>
-                    <option value="sosial">Sosial</option>
-                    <option value="lainnya">Lainnya</option>
-                  </>
-                ) : (
-                  <>
-                    <option value="kependudukan_sosial">
-                      Surat Keterangan Kependudukan & Sosial
-                    </option>
-                    <option value="pengantar_perizinan">
-                      Surat Pengantar & Perizinan
-                    </option>
-                    <option value="administrasi_pemerintahan">
-                      Surat Administrasi Pemerintahan Desa
-                    </option>
-                    <option value="lainnya">Lainnya</option>
-                  </>
-                )}
-              </select>
-
-              {/* ICON */}
-              <ChevronDown
-                size={18}
-                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                rows={5}
+                className={`w-full border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 ${formErrors.isi ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-[#298064]'}`}
+                required
+                maxLength={10000}
               />
             </div>
 
-
-
-            {/* UPLOAD FOTO */}
-            <div
-              onDrop={handleDrop}
-              onDragOver={(e) => e.preventDefault()}
-              className={`w-full border-2 border-dashed rounded-xl p-6 md:p-10 text-center cursor-pointer transition ${formErrors.file ? 'border-red-500 hover:border-red-500' : 'border-gray-300 hover:border-[#298064]'}`}
-            >
-              <label className="flex flex-col items-center justify-center cursor-pointer">
-                <div className="w-28 h-28 rounded-md flex items-center justify-center overflow-hidden border border-gray-200 bg-gray-50">
-                  {file && isImageFile && filePreview ? (
-                    <img
-                      src={filePreview}
-                      alt="preview"
-                      className="w-full h-full object-cover rounded"
-                    />
-                  ) : file ? (
-                    <div className="flex flex-col items-center justify-center gap-2 text-center px-3">
-                      <RiFileTextLine size={32} className="text-[#298064]" />
-                      <span className="text-[11px] font-medium text-gray-700 break-all">
-                        {file.name}
-                      </span>
-                      <span className="text-[10px] text-gray-400 uppercase tracking-wide">
-                        Dokumen dipilih
-                      </span>
-                    </div>
-                  ) : (
-                    <img
-                      src="/assets/pengaduan/upload-file.png"
-                      alt="upload icon"
-                      className="w-full object-contain opacity-70"
-                    />
-                  )}
-                </div>
-
-                <p className="text-sm md:text-base text-gray-600">
-                  Drag and drop file disini
-                </p>
-                <p className="text-xs text-gray-400">
-                  (Gambar atau PDF - Atau klik untuk memilih)
-                </p>
-
-                {file && (
-                  <p className="text-xs text-green-600 mt-2">
-                    ✓ {file.name}
-                  </p>
-                )}
-
+            {/* TANGGAL & LOKASI */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-gray-600 px-1">
+                  {form.jenis === "pengaduan" ? "Tanggal Kejadian / Laporan *" : "Tanggal Pengajuan / Kebutuhan *"}
+                </label>
                 <input
-                  type="file"
-                  accept=".jpg,.jpeg,.png,.webp,.pdf"
-                  onChange={handleFileChange}
-                  className="hidden"
+                  type="date"
+                  name="tanggal"
+                  value={form.tanggal}
+                  onChange={handleChange}
+                  className={`border rounded-lg p-3 text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#298064] ${formErrors.tanggal ? 'border-red-500' : 'border-gray-300'}`}
+                  required
                 />
-              </label>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-gray-600 px-1">
+                  {form.jenis === "pengaduan" ? "Lokasi Kejadian *" : "Lokasi / Alamat Terkait *"}
+                </label>
+                <input
+                  type="text"
+                  name="lokasi"
+                  placeholder={form.jenis === "pengaduan" ? "Contoh: RT 02 / Dusun I" : "Contoh: Alamat Pemohon atau Lokasi Terkait"}
+                  value={form.lokasi}
+                  onChange={handleChange}
+                  className={`border rounded-lg p-3 text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#298064] ${formErrors.lokasi ? 'border-red-500' : 'border-gray-300'}`}
+                  required
+                  maxLength={255}
+                />
+              </div>
             </div>
-            {formErrors.file && (
-              <p className="text-red-500 text-xs -mt-2">{formErrors.file}</p>
-            )}
+
+            {/* KATEGORI */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-gray-600 px-1">
+                Kategori Layanan *
+              </label>
+              <div className="relative">
+                <select
+                  name="kategori"
+                  value={form.kategori}
+                  onChange={handleChange}
+                  className={`w-full border rounded-lg px-3 py-3 pr-10 text-sm appearance-none bg-white focus:outline-none focus:ring-2 ${formErrors.kategori ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-[#298064]'}`}
+                >
+                  <option value="">Pilih Kategori</option>
+                  {form.jenis === "pengaduan" ? (
+                    <>
+                      <option value="infrastruktur">Infrastruktur</option>
+                      <option value="kesehatan">Kesehatan</option>
+                      <option value="layanan">Layanan</option>
+                      <option value="lingkungan">Lingkungan</option>
+                      <option value="pendidikan">Pendidikan</option>
+                      <option value="sosial">Sosial</option>
+                      <option value="lainnya">Lainnya</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="kependudukan_sosial">
+                        Surat Keterangan Kependudukan & Sosial
+                      </option>
+                      <option value="pengantar_perizinan">
+                        Surat Pengantar & Perizinan
+                      </option>
+                      <option value="administrasi_pemerintahan">
+                        Surat Administrasi Pemerintahan Desa
+                      </option>
+                      <option value="lainnya">Lainnya</option>
+                    </>
+                  )}
+                </select>
+
+                {/* ICON */}
+                <ChevronDown
+                  size={18}
+                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                />
+              </div>
+            </div>
+
+            {/* UPLOAD FOTO / DOKUMEN */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-gray-600 px-1">
+                {form.jenis === "pengaduan" ? "Upload Foto / File Pendukung (Bukti Kejadian) *" : "Upload Berkas / Dokumen Persyaratan (Opsional)"}
+              </label>
+              <div
+                onDrop={handleDrop}
+                onDragOver={(e) => e.preventDefault()}
+                className={`w-full border-2 border-dashed rounded-xl p-6 md:p-10 text-center cursor-pointer transition ${formErrors.file ? 'border-red-500 hover:border-red-500' : 'border-gray-300 hover:border-[#298064]'}`}
+              >
+                <label className="flex flex-col items-center justify-center cursor-pointer">
+                  <div className="w-28 h-28 rounded-md flex items-center justify-center overflow-hidden border border-gray-200 bg-gray-50">
+                    {file && isImageFile && filePreview ? (
+                      <img
+                        src={filePreview}
+                        alt="preview"
+                        className="w-full h-full object-cover rounded"
+                      />
+                    ) : file ? (
+                      <div className="flex flex-col items-center justify-center gap-2 text-center px-3">
+                        <RiFileTextLine size={32} className="text-[#298064]" />
+                        <span className="text-[11px] font-medium text-gray-700 break-all">
+                          {file.name}
+                        </span>
+                        <span className="text-[10px] text-gray-400 uppercase tracking-wide">
+                          Dokumen dipilih
+                        </span>
+                      </div>
+                    ) : (
+                      <img
+                        src="/assets/pengaduan/upload-file.png"
+                        alt="upload icon"
+                        className="w-full object-contain opacity-70"
+                      />
+                    )}
+                  </div>
+
+                  <p className="text-sm md:text-base text-gray-600 mt-2 font-medium">
+                    Drag and drop file disini atau klik untuk memilih
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {form.jenis === "pengaduan"
+                      ? "(Menerima JPG, JPEG, PNG, WebP, atau PDF - Maksimal 5MB)"
+                      : "(Menerima JPG, JPEG, PNG, WebP, atau PDF - Maksimal 5MB)"}
+                  </p>
+
+                  {file && (
+                    <p className="text-xs text-green-600 mt-2 font-semibold">
+                      ✓ Berkas siap dikirim: {file.name}
+                    </p>
+                  )}
+
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp,.pdf"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+              {formErrors.file && (
+                <p className="text-red-500 text-xs mt-1 px-1">{formErrors.file}</p>
+              )}
+            </div>
 
             {/* OPSI */}
             {successMessage && (
@@ -589,13 +644,17 @@ export default function PengaduanPage() {
               </div>
             )}
 
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pt-2">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-[#298064] hover:bg-[#298064] disabled:opacity-50 text-white w-full py-3 rounded-lg text-sm font-semibold"
+                className="bg-[#298064] hover:bg-[#1f604b] disabled:opacity-50 text-white w-full py-3 rounded-lg text-sm font-semibold transition"
               >
-                {isSubmitting ? "Mengirim..." : "Kirim Laporan"}
+                {isSubmitting 
+                  ? "Mengirim..." 
+                  : form.jenis === "pengaduan" 
+                    ? "Kirim Pengaduan & Aspirasi" 
+                    : "Kirim Permohonan Surat/Layanan"}
               </button>
             </div>
           </form>

@@ -224,31 +224,26 @@ export default function Belanja() {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 items-stretch">
                 {pagedProducts.map((product) => (
-                  <article key={product.id} className="rounded-xl">
+                  <article key={product.id} className="flex flex-col justify-between h-full bg-white p-5 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                     <button
                       type="button"
                       onClick={() => handleOpenDetail(product.id)}
-                      className="w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#298064]/40"
+                      className="w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#298064]/40 flex flex-col flex-grow"
                       aria-label={`Buka detail ${product.nama}`}
                     >
-                      <div className="rounded-2xl border border-gray-300 bg-[#e9e9e9] p-6">
+                      <div className="rounded-xl border border-gray-200 bg-[#f9f9f9] p-4 flex items-center justify-center w-full aspect-square overflow-hidden">
                         <img
                           src={product.image_url || "/assets/belanja/Buyung-upik-susu-coklat 1.png"}
                           alt={product.nama}
-                          className="mx-auto h-72 w-auto object-contain"
+                          className="h-full w-full object-contain hover:scale-105 transition-transform duration-300"
                         />
                       </div>
 
-                      <h3 className="mt-5 line-clamp-2 text-[22px] font-bold leading-[1.25] text-black">
+                      <h3 className="mt-5 line-clamp-2 text-[22px] font-bold leading-[1.25] text-black min-h-[3.5rem]">
                         {product.nama}
                       </h3>
-
-                      <div className="mt-4 flex items-center gap-2" aria-label={`Rating produk ${product.rating.toFixed(1)}`}>
-                        <Star size={20} className="text-[#f6ba00]" fill="currentColor" aria-hidden="true" />
-                        <span className="text-[18px] font-semibold text-[#9a9a9a]">{product.rating.toFixed(1)}</span>
-                      </div>
 
                       <p className="mt-5 text-[22px] font-medium leading-[1.25] text-[#298064]">{formatRupiah(product.price)}</p>
                     </button>
@@ -256,7 +251,7 @@ export default function Belanja() {
                     <button
                       type="button"
                       onClick={(event) => handleBuyNow(event, product.id)}
-                      className="mt-8 w-full rounded-[2rem] bg-[#2f8a6b] py-5 text-[18px] font-bold text-white transition hover:bg-[#216c54] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1d5f4a] focus-visible:ring-offset-2"
+                      className="mt-6 w-full rounded-[2rem] bg-[#2f8a6b] py-4 text-[18px] font-bold text-white transition hover:bg-[#216c54] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1d5f4a] focus-visible:ring-offset-2"
                       aria-label={`Buy Now ${product.nama}`}
                     >
                       Buy Now
@@ -276,7 +271,7 @@ export default function Belanja() {
                   <ChevronLeft size={18} />
                 </button>
 
-                {[1, 2, 3].map((pageNumber) => {
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => {
                   const isActive = pageNumber === activePage
 
                   return (
