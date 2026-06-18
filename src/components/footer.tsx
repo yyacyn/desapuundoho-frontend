@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 function Footer({ siteSettings }) {
   const {
     instansi_name = 'Desa Puundoho',
-    instansi_description = 'Desa Puundoho adalah desa yang terletak di Kecamatan Baula, Kabupaten Kolaka, Sulawesi Tenggara. Website ini merupakan portal resmi pemerintah Desa Puundoho yang menyediakan informasi terkini mengenai kegiatan desa, layanan publik, data kependudukan, serta program pembangunan desa.',
+    instansi_description = 'Desa Puundoho adalah desa yang terletak di Kecamatan Pakue Utara, Kabupaten Kolaka Utara, Sulawesi Tenggara. Website ini merupakan portal resmi pemerintah Desa Puundoho yang menyediakan informasi terkini mengenai kegiatan desa, layanan publik, data kependudukan, serta program pembangunan desa.',
     instansi_address = 'Kecamatan Pakue Utara, Kabupaten Kolaka Utara, Sulawesi Tenggara',
     instansi_phone = '+62 812-5520-2669',
     instansi_email = 'desapuundoho@gmail.com',
